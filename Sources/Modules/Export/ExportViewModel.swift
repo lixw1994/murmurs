@@ -152,7 +152,7 @@ enum ExportFormat: CaseIterable {
         } else if category == .summary {
             let items = try fetchSummaries()
             for item in items {
-                ret.append("## \(item.viewTitle)\n\n")
+                ret.append("## Murmurs \(item.viewTitle) Summary\n\n")
                 ret.append("\(item.viewContent)\n\n\n")
             }
         }

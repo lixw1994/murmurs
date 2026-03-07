@@ -36,7 +36,7 @@ extension SummaryEntity {
 
     var viewTitle: String { title }
     var viewContent: String { content }
-    var shareContent: String { "# \(viewTitle)" + "\n\n" + viewContent }
+    var shareContent: String { "# Murmurs \(viewTitle) Summary" + "\n\n" + viewContent }
 
     var viewCreatedAt: String {
         let formatter = DateFormatter()

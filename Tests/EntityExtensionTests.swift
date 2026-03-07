@@ -74,7 +74,7 @@ import SwiftData
 
     func testSummary_ShareContent_FormatsAsMarkdown() {
         let summary = makeSummary(title: "Title", content: "Body")
-        XCTAssertEqual(summary.shareContent, "# Title\n\nBody")
+        XCTAssertEqual(summary.shareContent, "# Murmurs Title Summary\n\nBody")
     }
 
     func testSummary_TruncatedContent_TruncatesLongContent() {

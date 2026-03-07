@@ -141,7 +141,7 @@ struct SummaryDetailView: View {
         let url = fileName(ext: "pdf")
         let document = PDFDocument(format: .a4)
         
-        let title = NSMutableAttributedString(string: summary.viewTitle, attributes: [
+        let title = NSMutableAttributedString(string: "Murmurs \(summary.viewTitle) Summary", attributes: [
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 24, weight: .bold)
         ])
         document.add(attributedTextObject: PDFAttributedText(text: title))
