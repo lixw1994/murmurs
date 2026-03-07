@@ -1,21 +1,14 @@
-//
-//  ExportView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/08/19.
-//
-
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct ExportView: View {
-    @StateObject private var vm: ExportViewModel
+    @State private var vm: ExportViewModel
     @Environment(\.dismiss) var dismiss
-    
-    init(moc: NSManagedObjectContext = DataContainer.shared.context) {
-        self._vm = StateObject(wrappedValue: ExportViewModel(moc: moc))
+
+    init(context: ModelContext = DataContainer.shared.context) {
+        self._vm = State(initialValue: ExportViewModel(context: context))
     }
-    
+
     var body: some View {
         NavigationStack {
             Form {
@@ -28,7 +21,7 @@ struct ExportView: View {
                     } label: {
                         Text(L(.export_category))
                     }
-                
+
                     Picker(selection: $vm.format) {
                         ForEach(ExportFormat.allCases, id: \.self) {
                             Text($0.displayName)
@@ -38,7 +31,7 @@ struct ExportView: View {
                         Text(L(.export_format))
                     }
                 }
-                
+
                 Section {
                     Button {
                         vm.export()
@@ -81,9 +74,8 @@ struct ExportView: View {
     }
 }
 
-struct ExportView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExportView(moc: DataContainer.preview.context)
-            .preferredColorScheme(.dark)
-    }
+#Preview {
+    ExportView(context: DataContainer.preview.context)
+        .preferredColorScheme(.dark)
+        .modelContainer(DataContainer.preview.modelContainer)
 }

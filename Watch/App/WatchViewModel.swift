@@ -1,15 +1,9 @@
-//
-//  WatchViewModel.swift
-//  ALogWatch
-//
-//  Created by Xin Du on 2023/08/05.
-//
-
 import Foundation
 import XLog
 import WatchConnectivity
+import Observation
 
-class WatchViewModel: ObservableObject {
+@MainActor @Observable final class WatchViewModel {
     let appState = WatchAppState.shared
     let dc = DataContainer.shared
     let conn = Connectivity.shared

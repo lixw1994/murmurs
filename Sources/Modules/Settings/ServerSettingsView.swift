@@ -1,15 +1,8 @@
-//
-//  ServerSettingsView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/14.
-//
-
 import SwiftUI
 
 struct ServerSettingsView: View {
     @EnvironmentObject var config: Config
-    @StateObject private var vm = ServerSettingsViewModel()
+    @State private var vm = ServerSettingsViewModel()
     @Environment(\.dismiss) var dismiss
     
     @State private var showStatus = false
@@ -146,10 +139,8 @@ struct ServerSettingsView: View {
     }
 }
 
-struct OpenAISettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        ServerSettingsView()
-            .preferredColorScheme(.dark)
-            .environmentObject(Config.shared)
-    }
+#Preview {
+    ServerSettingsView()
+        .preferredColorScheme(.dark)
+        .environmentObject(Config.shared)
 }

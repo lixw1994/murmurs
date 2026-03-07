@@ -1,10 +1,3 @@
-//
-//  OpenAIChatModel.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/10.
-//
-
 import Foundation
 
 enum OpenAIChatModel: String, CaseIterable {

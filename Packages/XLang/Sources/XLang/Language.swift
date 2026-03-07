@@ -1,9 +1,3 @@
-//
-//  Language.swift
-//  
-//  Created by Xin Du on 2023/05/05.
-//
-
 import Foundation
 
 public enum Language: String, CaseIterable {

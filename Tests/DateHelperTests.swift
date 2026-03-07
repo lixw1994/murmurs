@@ -1,12 +1,5 @@
-//
-//  DateHelperTests.swift
-//  ALogTests
-//
-//  Created by Xin Du on 2023/10/18.
-//
-
 import XCTest
-@testable import ALog
+@testable import Murmurs
 
 final class DateHelperTests: XCTestCase {
     func testIdentifier() {

@@ -1,10 +1,3 @@
-//
-//  AppState.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/09.
-//
-
 import Foundation
 import AVFoundation
 
@@ -12,10 +5,11 @@ import XLog
 import XLang
 import SwiftUI
 import KeychainAccess
+import Observation
 
-class AppState: ObservableObject {
+@Observable final class AppState {
     static let shared = AppState()
-    
+
     private init() {
         if UserDefaults.standard.bool(forKey: PREMIUM_KEY) {
             isPremium = true
@@ -24,24 +18,24 @@ class AppState: ObservableObject {
             isPremium = keychain[string: PREMIUM_KEY] != nil
         }
     }
-    
+
     private let l10n = XLang.shared
     private let keychain = Keychain(service: Bundle.main.bundleIdentifier!)
-    
-    @Published var language: Language = XLang.shared.currentLang {
+
+    var language: Language = XLang.shared.currentLang {
         didSet {
             l10n.setLang(language)
         }
     }
-    
-    @Published var micPermission: AVAudioSession.RecordPermission = .undetermined
-    
-    @Published var activeSheet: ActiveSheet?
-    @Published var activeTab: Int = 0
-    @Published var showRecording = false
-    
+
+    var micPermission: AVAudioSession.RecordPermission = .undetermined
+
+    var activeSheet: ActiveSheet?
+    var activeTab: Int = 0
+    var showRecording = false
+
     private let PREMIUM_KEY = "is_premium"
-    @Published var isPremium: Bool = false {
+    var isPremium: Bool = false {
         didSet {
             if isPremium == false {
                 keychain[PREMIUM_KEY] = nil

@@ -11,9 +11,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Run tests
         run: |
-          echo "HMAC_KEY=ABC-123" > .env
           bundle install
-          bin/arkana
           brew install xcodegen
           xcodegen
           bundle exec fastlane tests

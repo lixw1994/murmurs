@@ -1,10 +1,3 @@
-//
-//  FeedbackButton.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/18.
-//
-
 import SwiftUI
 
 struct FeedbackButton<Label: View>: View {
@@ -29,13 +22,10 @@ struct FeedbackButton<Label: View>: View {
     }
 }
 
-struct FeedbackButton_Previews: PreviewProvider {
-    static var previews: some View {
-        FeedbackButton {
-            print("hello")
-        } label: {
-            Image(systemName: "trash")
-        }
-
+#Preview {
+    FeedbackButton {
+        print("hello")
+    } label: {
+        Image(systemName: "trash")
     }
 }

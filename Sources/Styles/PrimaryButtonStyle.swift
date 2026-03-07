@@ -1,10 +1,3 @@
-//
-//  PrimaryButtonStyle.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/14.
-//
-
 import SwiftUI
 
 struct PrimaryButtonStyle: ButtonStyle {
@@ -31,16 +24,14 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
     
-struct PrimaryButtonStyle_Previews: PreviewProvider {
-    static var previews: some View {
-        Button {
-            
-        } label: {
-            Text("保存")
-                .font(.headline)
-        }
-        .buttonStyle(PrimaryButtonStyle())
-        .preferredColorScheme(.dark)
-        .disabled(true)
+#Preview {
+    Button {
+
+    } label: {
+        Text("保存")
+            .font(.headline)
     }
+    .buttonStyle(PrimaryButtonStyle())
+    .preferredColorScheme(.dark)
+    .disabled(true)
 }

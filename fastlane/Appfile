@@ -1,5 +1,4 @@
 # https://docs.fastlane.tools/advanced/#appfile
 
-app_identifier("app.tarbo.memo")
-
-team_id("ZTQ4TGAKFX")
+app_identifier("com.tangyue.murmurs")
+team_id("TBPGXSQHVE")

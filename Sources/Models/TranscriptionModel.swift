@@ -1,10 +1,3 @@
-//
-//  TranscriptionModel.swift
-//  ALog
-//
-//  Created by Xin Du on 2025/03/22.
-//
-
 import Foundation
 
 enum TranscriptionModel: String, CaseIterable {
@@ -28,20 +21,4 @@ enum TranscriptionModel: String, CaseIterable {
         }
     }
     
-    static var defaultServerModels: [TranscriptionModel] {
-        return [.whisper_1, .gpt_4o_mini_transcribe]
-    }
-    
-    static var customServerModels: [TranscriptionModel] {
-        return [.whisper_1, .gpt_4o_mini_transcribe, .gpt_4o_transcribe]
-    }
-    
-    static func isModelAvailable(_ model: TranscriptionModel, for serverType: ServerType) -> Bool {
-        switch serverType {
-        case .app:
-            return defaultServerModels.contains(model)
-        case .custom:
-            return customServerModels.contains(model)
-        }
-    }
-} 
+}

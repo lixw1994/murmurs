@@ -1,14 +1,7 @@
-//
-//  SummaryPromptEntryView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/21.
-//
-
 import SwiftUI
 
 struct SummaryPromptEntryView: View {
-    @ObservedObject var prompt: PromptEntity
+    var prompt: PromptEntity
     let selected: Bool
     var body: some View {
         HStack {
@@ -62,15 +55,14 @@ struct SummaryPromptEntryView: View {
 }
 
 #if DEBUG
-struct SummaryPromptEntryView_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack(spacing: 20) {
-            SummaryPromptEntryView(prompt: PromptEntity.preview(), selected: false)
-                .preferredColorScheme(.dark)
-            
-            SummaryPromptEntryView(prompt: PromptEntity.preview(), selected: true)
-                .preferredColorScheme(.dark)
-        }
+#Preview {
+    VStack(spacing: 20) {
+        SummaryPromptEntryView(prompt: PromptEntity.preview(context: DataContainer.preview.context), selected: false)
+            .preferredColorScheme(.dark)
+
+        SummaryPromptEntryView(prompt: PromptEntity.preview(context: DataContainer.preview.context), selected: true)
+            .preferredColorScheme(.dark)
     }
+    .modelContainer(DataContainer.preview.modelContainer)
 }
 #endif

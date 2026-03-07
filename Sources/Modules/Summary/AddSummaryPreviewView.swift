@@ -1,17 +1,11 @@
-//
-//  AddSummaryPreviewView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/22.
-//
-
 import SwiftUI
 
 struct AddSummaryPreviewView: View {
-    @EnvironmentObject var vm: AddSummaryViewModel
+    @Environment(AddSummaryViewModel.self) var vm
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
+        @Bindable var vm = vm
         ZStack {
             Form {
                 Section {
@@ -46,10 +40,8 @@ struct AddSummaryPreviewView: View {
 }
 
 #if DEBUG
-struct AddSummaryPreviewView_Previews: PreviewProvider {
-    static var previews: some View {
-        AddSummaryPreviewView()
-            .environmentObject(AddSummaryViewModel(item: SummaryItem.day(20230722), moc: DataContainer.preview.context))
-    }
+#Preview {
+    AddSummaryPreviewView()
+        .environment(AddSummaryViewModel(item: SummaryItem.day(20230722), context: DataContainer.preview.context))
 }
 #endif

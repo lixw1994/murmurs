@@ -1,93 +1,95 @@
-//
-//  AddSummaryViewModel.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/21.
-//
-
 import Foundation
-import CoreData
+import SwiftData
 import XLog
-import Combine
+import Observation
 
-class AddSummaryViewModel: ObservableObject {
+@MainActor @Observable final class AddSummaryViewModel {
     let item: SummaryItem
-    let moc: NSManagedObjectContext
-    
-    @Published var defaultTitle = ""
-    @Published var dayId = 0
-    
-    @Published var selectedPrompt: PromptEntity? {
+    let context: ModelContext
+
+    var defaultTitle = ""
+    var dayId = 0
+
+    var selectedPrompt: PromptEntity? {
         didSet {
             if let prompt = selectedPrompt {
                 temperature = prompt.temperature
             }
         }
     }
-    
-    @Published var temperature = 0.5
-    @Published var promptToEdit: PromptEntity?
-    @Published var showAddPrompt: Bool = false
-    
-    @Published var fatalErrorMessage = "" {
+
+    var temperature = 0.5
+    var promptToEdit: PromptEntity?
+    var showAddPrompt: Bool = false
+
+    var fatalErrorMessage = "" {
         didSet {
             showFatalError = true
         }
     }
-    @Published var showFatalError = false
-    @Published var memoContent = ""
-    @Published var summaryMessage = ""
-    @Published var summaryMessageCharCount = 0
-    
-    @Published var navPath: [AddSummaryNavPath] = []
-    
-    @Published var isSummarizing = false
-    @Published var summarizedResponse = ""
-    @Published var summaryError = ""
-    @Published var saved = false
-    @Published var model: OpenAIChatModel = .gpt_4o_mini
-    
-    @Published var validMemos = [MemoEntity]()
-    @Published var excludedMemos = Set<MemoEntity>()
-    @Published var selectedMemos = [MemoEntity]()
-    
+    var showFatalError = false
+    var memoContent = ""
+    var summaryMessage = ""
+    var summaryMessageCharCount: Int { summaryMessage.count }
+
+    var navPath: [AddSummaryNavPath] = []
+
+    var isSummarizing = false
+    var summarizedResponse = ""
+    var summaryError = ""
+    var saved = false
+    var model: OpenAIChatModel = .gpt_4o_mini
+
+    var validMemos = [MemoEntity]()
+    var excludedMemos = Set<MemoEntity>() {
+        didSet { selectedMemos = validMemos.filter { !excludedMemos.contains($0) } }
+    }
+    var selectedMemos = [MemoEntity]()
+
     private var cancellationTask: Task<Void, Never>? = nil
-    
-    private var cancellables = Set<AnyCancellable>()
-    
-    init(item: SummaryItem, moc: NSManagedObjectContext) {
+    private let aiClient: AIClientProtocol
+    private let store: MemoStoreProtocol
+    private let config: any ConfigProtocol
+
+    init(item: SummaryItem,
+         context: ModelContext,
+         aiClient: AIClientProtocol = OpenAIClient.shared,
+         store: MemoStoreProtocol = DataContainer.shared,
+         config: any ConfigProtocol = Config.shared) {
         self.item = item
-        self.moc = moc
-        
+        self.context = context
+        self.aiClient = aiClient
+        self.store = store
+        self.config = config
+
         if case let .day(id) = item {
             dayId = id
         }
-        
+
         self.defaultTitle = L(.sum_title_default, DateHelper.formatIdentifier(dayId, dateFormat: "yyyy-MM-dd"))
-        
-        $summaryMessage.map {
-            $0.count
-        }.assign(to: &$summaryMessageCharCount)
     }
-    
+
     deinit {
         #if DEBUG
             XLog.debug("✖︎ AddSummaryViewModel", source: "Summary")
         #endif
     }
-    
+
     func fetchEntries() {
-        let fetchRequest = MemoEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "day = %d", dayId)
-        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \MemoEntity.createdAt, ascending: true)]
+        let dayId32 = Int32(dayId)
+        var descriptor = FetchDescriptor<MemoEntity>(
+            predicate: #Predicate { $0.day == dayId32 },
+            sortBy: [SortDescriptor(\MemoEntity.createdAt)]
+        )
         var ret = ""
         do {
-            let memos = try moc.fetch(fetchRequest).filter { !$0.viewContent.isEmpty }
+            let memos = try context.fetch(descriptor).filter { !$0.viewContent.isEmpty }
             validMemos = memos
+            selectedMemos = memos
             for memo in memos {
                 ret.append("\n[\(memo.viewTime)] \(memo.viewContent)\n")
             }
-            
+
             if ret.count < Constants.Summary.lengthLimit {
                 fatalErrorMessage = L(.sum_text_too_short)
             } else {
@@ -96,31 +98,27 @@ class AddSummaryViewModel: ObservableObject {
         } catch {
             XLog.error(error, source: "Sumary")
         }
-        
-        $excludedMemos.sink { [unowned self] s in
-            selectedMemos = validMemos.filter { !s.contains($0) }
-        }.store(in: &cancellables)
     }
-    
+
     func generateMessage() {
         guard let prompt = selectedPrompt else { return }
-        
+
         var content = ""
         for memo in selectedMemos {
             content.append("\n[\(memo.viewTime)] \(memo.viewContent)\n")
         }
-        
+
         if content.count < Constants.Summary.lengthLimit {
             fatalErrorMessage = L(.sum_text_too_short)
         }
-        
+
         var ret = replacePlaceHolders(prompt.viewContent)
         ret.append("\n\n------")
         ret.append(content)
         ret.append("------\n")
         summaryMessage = ret
     }
-    
+
     func replacePlaceHolders(_ message: String) -> String {
         var ret = message
         let items = [
@@ -131,35 +129,30 @@ class AddSummaryViewModel: ObservableObject {
         }
         return ret
     }
-    
+
     func summarize() {
         if isSummarizing { return }
-        
-        var server = "default"
-        if Config.shared.serverType == .custom {
-            
-            if !Config.shared.isServerValid {
-                summaryError = L(.error_invalid_custom_server)
-                return
-            }
-            
-            server = Config.shared.serverHost
-            model = Config.shared.aiModel
+
+        if !config.isServerValid {
+            summaryError = L(.error_invalid_custom_server)
+            return
         }
-        
+
+        let server = config.serverHost
+        model = config.aiModel
+
         XLog.info("Summarize (prompt: \(selectedPrompt?.viewTitle ?? ""), server: \(server), temp: \(temperature), model: \(model.name))", source: "Summary")
-        
+
         cancellationTask = Task { @MainActor in
             isSummarizing = true
             do {
                 summaryError = ""
                 summarizedResponse = ""
-                let stream = try await OpenAIClient().summarize(summaryMessage, model: model, temperature: temperature)
+                let stream = try await aiClient.summarize(summaryMessage, model: model, temperature: temperature)
                 for try await text in stream {
-                    // first response
                     if summarizedResponse == "" {
                         XLog.info("Sent characters = \(summaryMessageCharCount)", source: "Summary")
-                        DataContainer.shared.recordUsage(charsSent: summaryMessageCharCount)
+                        store.recordUsage(charsSent: summaryMessageCharCount, charsReceived: 0, whisper: 0)
                     }
                     summarizedResponse += text
                 }
@@ -170,20 +163,19 @@ class AddSummaryViewModel: ObservableObject {
             isSummarizing = false
         }
     }
-    
+
     func save() {
-        let summary = SummaryEntity.newEntity(moc: moc)
-        summary.content = summarizedResponse
-        summary.title = defaultTitle
-        
+        let summary = SummaryEntity(title: defaultTitle, content: summarizedResponse)
+        context.insert(summary)
+
         do {
-            try moc.save()
+            try context.save()
             saved = true
         } catch {
             XLog.error(error, source: "Summary")
         }
     }
-    
+
     func cancelTasks() {
         cancellationTask?.cancel()
     }

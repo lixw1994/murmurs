@@ -1,16 +1,10 @@
-//
-//  TimelineHeaderView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/12.
-//
-
 import SwiftUI
+import SwiftData
 
 struct TimelineHeaderView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
     @EnvironmentObject var config: Config
-    @Environment(\.managedObjectContext) var moc
+    @Environment(\.modelContext) var modelContext
     
     let dayId: Int
     let date: Date
@@ -49,7 +43,7 @@ struct TimelineHeaderView: View {
                 }
                 
                 Button {
-                    let markdown = Exporter.exportMemos(dayId, moc: moc)
+                    let markdown = Exporter.exportMemos(dayId, context: modelContext)
                     ShareHelper.share(items: [markdown])
                 } label: {
                     Image(systemName: "square.and.arrow.up.on.square")
@@ -68,9 +62,7 @@ struct TimelineHeaderView: View {
 }
 
 #if DEBUG
-struct TimelineHeaderView_Previews: PreviewProvider {
-    static var previews: some View {
-        TimelineHeaderView(dayId: 20230101)
-    }
+#Preview {
+    TimelineHeaderView(dayId: 20230101)
 }
 #endif

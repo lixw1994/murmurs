@@ -1,14 +1,7 @@
-//
-//  MyToggle.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/14.
-//
-
 import SwiftUI
 
 struct MyToggle<Label: View>: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
     @Binding var isOn: Bool
     
     let label: () -> Label
@@ -24,10 +17,8 @@ struct MyToggle<Label: View>: View {
     }
 }
 
-struct MyToggle_Previews: PreviewProvider {
-    static var previews: some View {
-        MyToggle(isOn: .constant(true)) {
-            Text("hello")
-        }
+#Preview {
+    MyToggle(isOn: .constant(true)) {
+        Text("hello")
     }
 }

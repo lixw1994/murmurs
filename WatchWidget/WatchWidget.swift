@@ -1,10 +1,3 @@
-//
-//  WatchWidget.swift
-//  ALogWatchWidget
-//
-//  Created by Xin Du on 2023/08/07.
-//
-
 import WidgetKit
 import SwiftUI
 
@@ -44,7 +37,7 @@ struct WatchWidgetEntryView : View {
             #endif
         }
         .widgetAccentable()
-        .widgetURL(URL(string: "alog://record")!)
+        .widgetURL(URL(string: "murmurs://record")!)
     }
     
     @ViewBuilder
@@ -71,7 +64,7 @@ struct WatchWidget: Widget {
             WatchWidgetEntryView(entry: entry)
         }
         #if os(watchOS)
-        .configurationDisplayName("ALog")
+        .configurationDisplayName("Murmurs")
         .description("")
         .supportedFamilies([.accessoryCircular, .accessoryCorner])
         #else
@@ -82,13 +75,16 @@ struct WatchWidget: Widget {
     }
 }
 
-struct WatchWidget_Previews: PreviewProvider {
-    static var previews: some View {
-        WatchWidgetEntryView(entry: SimpleEntry(date: Date()))
-        #if os(watchOS)
-            .previewContext(WidgetPreviewContext(family: .accessoryCorner))
-        #else
-            .previewContext(WidgetPreviewContext(family: .accessoryCircular))
-        #endif
-    }
+#if os(watchOS)
+#Preview(as: .accessoryCorner) {
+    WatchWidget()
+} timeline: {
+    SimpleEntry(date: .now)
 }
+#else
+#Preview(as: .accessoryCircular) {
+    WatchWidget()
+} timeline: {
+    SimpleEntry(date: .now)
+}
+#endif

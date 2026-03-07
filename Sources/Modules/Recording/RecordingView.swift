@@ -1,101 +1,129 @@
-//
-//  RecordingView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/13.
-//
-
 import SwiftUI
 import DSWaveformImage
 import DSWaveformImageViews
 
 struct RecordingView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
     @Environment(\.dismiss) var dismiss
     @StateObject var recorder = AudioRecorder()
-    
+    @State var vm = RecordingViewModel()
+
     @State var configuration: Waveform.Configuration = .init(
-        style: .striped(.init(color: .white.withAlphaComponent(0.5), width: 3, spacing: 3))
+        style: .striped(.init(color: .label.withAlphaComponent(0.5), width: 3, spacing: 3))
     )
-    
+
+    @State private var detents: Set<PresentationDetent> = [.medium]
+    @State private var selectedDetent: PresentationDetent = .medium
+    @State private var liveTranscriptionResult: String?
+
     var body: some View {
         ZStack {
             if recorder.isRecording {
-                closeButton
-                RecordingStatusView()
-                    .padding(.top, 30)
-                recordedTimeLabel
-                recordingButtons
+                VStack(spacing: 0) {
+                    closeButton
+
+                    Spacer()
+
+                    RecordingStatusView()
+
+                    recordedTimeLabel
+                        .padding(.top, 20)
+
+                    if vm.isLiveTranscribing && !vm.liveTranscriptionText.isEmpty {
+                        liveTranscriptionView
+                    }
+
+                    Spacer()
+
+                    WaveformLiveCanvas(samples: recorder.samples, configuration: configuration)
+                        .frame(height: 50)
+                        .padding(.horizontal)
+                        .padding(.bottom, 30)
+
+                    StopRecordingButton {
+                        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                        Task {
+                            liveTranscriptionResult = await vm.stopLiveTranscription()
+                            recorder.stopRecording()
+                        }
+                    }
+                    .padding(.bottom, 40)
+                }
             } else if recorder.isCompleted {
-                RecordingCompletedView(voiceURL: recorder.voiceFile!)
-                    .opacity(Config.shared.autoSave ? 0 : 1)
+                RecordingCompletedView(
+                    voiceURL: recorder.voiceFile!,
+                    preTranscribedText: liveTranscriptionResult
+                )
+                .opacity(Config.shared.autoSave && liveTranscriptionResult == nil ? 0 : 1)
             } else {
                 ProgressView()
             }
         }
+        .presentationDetents(detents, selection: $selectedDetent)
+        .presentationDragIndicator(.hidden)
+        .interactiveDismissDisabled()
         .task {
+            vm.configureRecorder(recorder)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 recorder.startRecording()
             }
         }
-        .onChange(of: appState.micPermission) { newValue in
+        .onChange(of: appState.micPermission) { oldValue, newValue in
             if newValue == .denied {
                 dismiss()
             }
         }
-        .onChange(of: recorder.isRecording) { newValue in
+        .onChange(of: recorder.isRecording) { oldValue, newValue in
             UIApplication.shared.isIdleTimerDisabled = newValue
+            if newValue && vm.shouldUseLiveTranscription {
+                vm.startLiveTranscription()
+            }
+        }
+        .onChange(of: recorder.isCompleted) { oldValue, newValue in
+            if newValue {
+                detents = [.large]
+                selectedDetent = .large
+            }
         }
     }
-    
+
+    @ViewBuilder
+    var liveTranscriptionView: some View {
+        ScrollView {
+            Text(vm.liveTranscriptionText)
+                .font(.body)
+                .foregroundColor(.primary.opacity(0.8))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+        }
+        .frame(maxHeight: 120)
+        .padding(.top, 12)
+        .animation(.easeInOut(duration: 0.2), value: vm.liveTranscriptionText)
+    }
+
     @ViewBuilder
     var recordedTimeLabel: some View {
         Text(recorder.formattedTime)
             .font(.system(size: 50, weight: .bold, design: .monospaced))
-            .offset(y: -80)
     }
-    
-    @ViewBuilder
-    var recordingButtons: some View {
-        VStack {
-            Spacer()
-            WaveformLiveCanvas(samples: recorder.samples, configuration: configuration)
-                .frame(height: 50)
-                .padding(.bottom, 40)
-            StopRecordingButton {
-                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                recorder.stopRecording()
-            }
-            Spacer()
-                .frame(height: 100)
-        }
-    }
-    
-    @ViewBuilder
-    var cancelTranscribingButton: some View {
-        Button {
-        } label: {
-            Text(L(.cancel))
-                .font(.headline)
-        }.buttonStyle(SecondaryButtonStyle())
-    }
-    
+
     @ViewBuilder
     var closeButton: some View {
-        VStack {
-            HStack {
-                Spacer()
-                FeedbackButton {
-                    recorder.terminate()
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.title3)
-                }
-                .foregroundColor(Color(uiColor: .tertiaryLabel))
-                .padding(35)
-            }
+        HStack {
             Spacer()
+            FeedbackButton {
+                Task {
+                    _ = await vm.stopLiveTranscription()
+                }
+                recorder.terminate()
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.title3)
+            }
+            .foregroundColor(Color(uiColor: .tertiaryLabel))
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
         }
     }
 }
@@ -107,7 +135,7 @@ struct StopRecordingButton: View {
     init(action: @escaping () -> Void) {
         self.action = action
     }
-    
+
     var body: some View {
         Button (action: action) {
             Image(systemName: "stop.fill")
@@ -130,10 +158,8 @@ struct StopRecordingButton: View {
     }
 }
 
-struct RecordingView_Previews: PreviewProvider {
-    static var previews: some View {
-        RecordingView()
-            .preferredColorScheme(.dark)
-            .environmentObject(AppState.shared)
-    }
+#Preview {
+    RecordingView()
+        .preferredColorScheme(.dark)
+        .environment(AppState.shared)
 }

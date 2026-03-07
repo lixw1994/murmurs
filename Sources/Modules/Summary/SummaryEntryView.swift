@@ -1,21 +1,31 @@
-//
-//  SummaryEntryView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/22.
-//
-
 import SwiftUI
 
 struct SummaryEntryView: View {
-    @ObservedObject var summary: SummaryEntity
-    
+    var summary: SummaryEntity
+    var isSyncing: Bool = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
                 Text(summary.viewTitle)
                     .font(.title3)
                     .fontWeight(.bold)
+
+                if Config.shared.isReadwiseSet {
+                    if isSyncing {
+                        ProgressView()
+                            .scaleEffect(0.5)
+                            .frame(width: 12, height: 12)
+                    } else if summary.syncedAt != nil && !summary.needsSync {
+                        Image(systemName: "checkmark.icloud")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                    } else if summary.syncedAt != nil && summary.needsSync {
+                        Image(systemName: "arrow.clockwise.icloud")
+                            .font(.system(size: 10))
+                            .foregroundColor(.orange)
+                    }
+                }
             }
             
             Text(summary.truncatedContent(200))
@@ -34,10 +44,9 @@ struct SummaryEntryView: View {
 }
 
 #if DEBUG
-struct SummaryEntryView_Previews: PreviewProvider {
-    static var previews: some View {
-        SummaryEntryView(summary: SummaryEntity.preview())
-            .preferredColorScheme(.dark)
-    }
+#Preview {
+    SummaryEntryView(summary: SummaryEntity.preview(context: DataContainer.preview.context))
+        .preferredColorScheme(.dark)
+        .modelContainer(DataContainer.preview.modelContainer)
 }
 #endif

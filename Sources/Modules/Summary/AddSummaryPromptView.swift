@@ -1,23 +1,16 @@
-//
-//  AddSummaryPromptView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/20.
-//
-
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct AddSummaryPromptView: View {
-    @EnvironmentObject var appState: AppState
-    @StateObject private var vm: AddSummaryViewModel
-    
+    @Environment(AppState.self) var appState
+    @State private var vm: AddSummaryViewModel
+
     init(item: SummaryItem) {
-        self._vm = StateObject(wrappedValue: AddSummaryViewModel(item: item, moc: DataContainer.shared.context))
+        self._vm = State(initialValue: AddSummaryViewModel(item: item, context: DataContainer.shared.context))
     }
-    
+
     @Environment(\.dismiss) var dismiss
-    @FetchRequest<PromptEntity>(sortDescriptors: [SortDescriptor(\.createdAt, order: .forward)]) var prompts
+    @Query(sort: \PromptEntity.createdAt) var prompts: [PromptEntity]
     
     var body: some View {
         NavigationStack(path: $vm.navPath) {
@@ -61,16 +54,16 @@ struct AddSummaryPromptView: View {
             .navigationDestination(for: AddSummaryNavPath.self) { s in
                 if s == .preview {
                     AddSummaryPreviewView()
-                        .environmentObject(vm)
+                        .environment(vm)
                 } else if s == .memoSelection {
                     AddSummaryMemoSelectionView()
-                        .environmentObject(vm)
+                        .environment(vm)
                 } else if s == .summarize {
                     AddSummarySummarizeView()
-                        .environmentObject(vm)
+                        .environment(vm)
                 }
             }
-            .onChange(of: vm.saved) { newValue in
+            .onChange(of: vm.saved) { oldValue, newValue in
                 if newValue {
                     appState.activeTab = 1
                     dismiss()
@@ -136,8 +129,6 @@ struct AddSummaryPromptView: View {
     }
 }
 
-struct AddSummaryView_Previews: PreviewProvider {
-    static var previews: some View {
-        AddSummaryPromptView(item: SummaryItem.day(20231010))
-    }
+#Preview {
+    AddSummaryPromptView(item: SummaryItem.day(20231010))
 }

@@ -1,19 +1,12 @@
-//
-//  AddPromptView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/17.
-//
-
 import SwiftUI
 
 struct AddUpdatePromptView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject private var vm: EditPromptViewModel
+    @State private var vm: EditPromptViewModel
     @State private var showDeleteAlert = false
-    
+
     init(prompt: PromptEntity? = nil) {
-        self._vm = StateObject(wrappedValue: EditPromptViewModel(prompt: prompt))
+        self._vm = State(initialValue: EditPromptViewModel(prompt: prompt))
     }
     
     var body: some View {
@@ -142,9 +135,7 @@ struct AddUpdatePromptView: View {
     }
 }
 
-struct AddPromptView_Previews: PreviewProvider {
-    static var previews: some View {
-        AddUpdatePromptView()
-            .preferredColorScheme(.dark)
-    }
+#Preview {
+    AddUpdatePromptView()
+        .preferredColorScheme(.dark)
 }

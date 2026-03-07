@@ -1,19 +1,12 @@
-//
-//  WatchApp.swift
-//  ALogWatch
-//
-//  Created by Xin Du on 2023/08/04.
-//
-
 import SwiftUI
 import XLog
 
 @main
-struct ALogWatchApp: App {
+struct MurmursWatchApp: App {
     @WKApplicationDelegateAdaptor var delegate: WatchAppDelegate
     
-    @StateObject var container = DataContainer.shared
-    @StateObject var appState = WatchAppState.shared
+    @State var container = DataContainer.shared
+    @State var appState = WatchAppState.shared
     
     let vm: WatchViewModel
     let conn: Connectivity
@@ -35,11 +28,11 @@ struct ALogWatchApp: App {
     var body: some Scene {
         WindowGroup {
             WatchMainView()
-                .environmentObject(vm)
+                .environment(vm)
                 .environmentObject(conn)
-                .environmentObject(appState)
-                .environmentObject(container)
-                .environment(\.managedObjectContext, container.context)
+                .environment(appState)
+                .environment(container)
+                .modelContainer(container.modelContainer)
                 .preferredColorScheme(.dark)
                 .onOpenURL { url in
                     appState.openURL(url)

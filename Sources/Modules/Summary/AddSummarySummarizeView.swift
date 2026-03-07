@@ -1,14 +1,7 @@
-//
-//  AddSummarySummarizeView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/22.
-//
-
 import SwiftUI
 
 struct AddSummarySummarizeView: View {
-    @EnvironmentObject var vm: AddSummaryViewModel
+    @Environment(AddSummaryViewModel.self) var vm
     
     var body: some View {
         ZStack {
@@ -103,10 +96,8 @@ struct AddSummarySummarizeView: View {
 }
 
 #if DEBUG
-struct AddSummaryFinalView_Previews: PreviewProvider {
-    static var previews: some View {
-        AddSummarySummarizeView()
-            .environmentObject(AddSummaryViewModel(item: SummaryItem.day(20230722), moc: DataContainer.preview.context))
-    }
+#Preview {
+    AddSummarySummarizeView()
+        .environment(AddSummaryViewModel(item: SummaryItem.day(20230722), context: DataContainer.preview.context))
 }
 #endif

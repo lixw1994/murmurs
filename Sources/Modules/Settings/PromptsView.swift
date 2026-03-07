@@ -1,19 +1,13 @@
-//
-//  PromptsView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/15.
-//
-
 import SwiftUI
+import SwiftData
 
 struct PromptsView: View {
     @State private var showAddPrompt = false
     @State private var showPremium = false
     @State private var promptToEdit: PromptEntity?
-    @EnvironmentObject var appState: AppState
-    @Environment(\.managedObjectContext) private var moc
-    @FetchRequest<PromptEntity>(sortDescriptors: [SortDescriptor(\.createdAt, order: .forward)]) var prompts
+    @Environment(AppState.self) var appState
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \PromptEntity.createdAt) var prompts: [PromptEntity]
     
     let limit = Constants.Limit.prompts
     
@@ -52,9 +46,9 @@ struct PromptsView: View {
     
     private func deletePrompt(at offsets: IndexSet) {
         for index in offsets {
-            moc.delete(prompts[index])
+            modelContext.delete(prompts[index])
         }
-        try? moc.save()
+        try? modelContext.save()
     }
     
     @ViewBuilder
@@ -89,9 +83,7 @@ struct PromptsView: View {
     }
 }
 
-struct PromptsView_Previews: PreviewProvider {
-    static var previews: some View {
-        PromptsView()
-            .preferredColorScheme(.dark)
-    }
+#Preview {
+    PromptsView()
+        .preferredColorScheme(.dark)
 }

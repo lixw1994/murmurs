@@ -1,10 +1,3 @@
-//
-//  ExperimentsView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/10/09.
-//
-
 import SwiftUI
 
 struct ExperimentsView: View {
@@ -53,7 +46,7 @@ struct ExperimentsView: View {
             }
         }
         .navigationTitle(L(.settings_experimental_features))
-        .onChange(of: config.customWhisperPromptEnabled) { newValue in
+        .onChange(of: config.customWhisperPromptEnabled) { oldValue, newValue in
             if newValue == true {
                 whisperPromptFocused = true
             }
@@ -61,9 +54,7 @@ struct ExperimentsView: View {
     }
 }
 
-struct ExperimentsView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExperimentsView()
-            .environmentObject(Config.shared)
-    }
+#Preview {
+    ExperimentsView()
+        .environmentObject(Config.shared)
 }

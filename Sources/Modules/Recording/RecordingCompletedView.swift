@@ -1,23 +1,16 @@
-//
-//  RecordingCompletedView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/14.
-//
-
 import SwiftUI
 
 struct RecordingCompletedView: View {
-    @StateObject var vm: RecordingCompletedViewModel
+    @State var vm: RecordingCompletedViewModel
     @Environment(\.dismiss) var dismiss
     @StateObject var player: AudioPlayer
-    
+
     let editorMinHeight: CGFloat = 200.0
-    
+
     @State private var showDeleteAlert = false
-    
-    init(voiceURL: URL) {
-        self._vm = StateObject(wrappedValue: RecordingCompletedViewModel(voicePath: voiceURL))
+
+    init(voiceURL: URL, preTranscribedText: String? = nil) {
+        self._vm = State(initialValue: RecordingCompletedViewModel(voicePath: voiceURL, preTranscribedText: preTranscribedText))
         self._player = StateObject(wrappedValue: AudioPlayer(voiceURL))
     }
     
@@ -75,7 +68,7 @@ struct RecordingCompletedView: View {
             }
             .padding(.horizontal, 30)
         }
-        .onChange(of: vm.saved) { newValue in
+        .onChange(of: vm.saved) {
             dismiss()
         }
         .task {
@@ -141,17 +134,14 @@ struct RecordingCompletedView: View {
             .buttonStyle(DestructiveButtonStyle())
             .frame(width: 40, height: 40)
         }
-        .padding(.bottom, 30)
+        .padding(.bottom, 16)
     }
 }
 
 #if DEBUG
-struct RecordingCompletedView_Previews: PreviewProvider {
-    static var previews: some View {
-        RecordingCompletedView(voiceURL: URL(filePath: "a.m4a"))
-            .preferredColorScheme(.dark)
-            .environmentObject(Config.shared)
-        
-    }
+#Preview {
+    RecordingCompletedView(voiceURL: URL(filePath: "a.m4a"))
+        .preferredColorScheme(.dark)
+        .environmentObject(Config.shared)
 }
 #endif

@@ -1,19 +1,13 @@
-//
-//  SummaryEditView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/22.
-//
-
 import SwiftUI
+import SwiftData
 
 struct SummaryEditView: View {
-    @ObservedObject var summary: SummaryEntity
-    
+    var summary: SummaryEntity
+
     @State private var title = ""
     @State private var content = ""
-    
-    @Environment(\.managedObjectContext) var moc
+
+    @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     
     init(summary: SummaryEntity) {
@@ -63,16 +57,15 @@ struct SummaryEditView: View {
         summary.title = title
         summary.content = content
         do {
-            try moc.save()
+            try modelContext.save()
         } catch {
         }
     }
 }
 
 #if DEBUG
-struct EditSummaryView_Previews: PreviewProvider {
-    static var previews: some View {
-        SummaryEditView(summary: SummaryEntity.preview())
-    }
+#Preview {
+    SummaryEditView(summary: SummaryEntity.preview(context: DataContainer.preview.context))
+        .modelContainer(DataContainer.preview.modelContainer)
 }
 #endif

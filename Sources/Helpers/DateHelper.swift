@@ -1,10 +1,3 @@
-//
-//  DateHelper.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/12.
-//
-
 import Foundation
 
 class DateHelper {

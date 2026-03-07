@@ -1,10 +1,3 @@
-//
-//  AudioPlayer.swift
-//  ALogWatch
-//
-//  Created by Xin Du on 2023/08/06.
-//
-
 import AVFoundation
 import XLog
 

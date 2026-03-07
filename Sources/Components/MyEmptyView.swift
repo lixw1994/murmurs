@@ -1,10 +1,3 @@
-//
-//  EmptyView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/17.
-//
-
 import SwiftUI
 
 struct MyEmptyView: View {
@@ -23,8 +16,6 @@ struct MyEmptyView: View {
 }
 
 
-struct EmptyView_Previews: PreviewProvider {
-    static var previews: some View {
-        MyEmptyView(text: "No Memos")
-    }
+#Preview {
+    MyEmptyView(text: "No Memos")
 }

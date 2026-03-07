@@ -1,10 +1,3 @@
-//
-//  NoEffectButtonStyle.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/22.
-//
-
 import SwiftUI
 
 struct NoEffectButtonStyle: ButtonStyle {
@@ -13,13 +6,11 @@ struct NoEffectButtonStyle: ButtonStyle {
     }
 }
 
-struct NoEffectButtonStyle_Previews: PreviewProvider {
-    static var previews: some View {
-        Button {
-            
-        } label: {
-            Image(systemName: "plus")
-                .background(.red)
-        }.buttonStyle(NoEffectButtonStyle())
-    }
+#Preview {
+    Button {
+
+    } label: {
+        Image(systemName: "plus")
+            .background(.red)
+    }.buttonStyle(NoEffectButtonStyle())
 }

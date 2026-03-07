@@ -1,14 +1,7 @@
-//
-//  MicPermissionView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/13.
-//
-
 import SwiftUI
 
 struct MicPermissionView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
     @Environment(\.dismiss) var dismiss
     
     var denied: Bool {
@@ -44,8 +37,8 @@ struct MicPermissionView: View {
         }
         .padding(.horizontal, 40)
         .presentationDetents([.large])
-        .onChange(of: appState.micPermission) { v in
-            if v != .denied {
+        .onChange(of: appState.micPermission) { oldValue, newValue in
+            if newValue != .denied {
                 dismiss()
             }
         }
@@ -95,8 +88,6 @@ struct MicPermissionView: View {
     }
 }
 
-struct MicPermissionView_Previews: PreviewProvider {
-    static var previews: some View {
-        MicPermissionView()
-    }
+#Preview {
+    MicPermissionView()
 }

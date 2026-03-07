@@ -1,16 +1,9 @@
-//
-//  WatchRecordingView.swift
-//  ALogWatch
-//
-//  Created by Xin Du on 2023/08/05.
-//
-
 import SwiftUI
 
 struct WatchRecordingView: View {
     @ObservedObject var recorder: AudioRecorder
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var appState: WatchAppState
+    @Environment(WatchAppState.self) var appState
     
     var body: some View {
         ZStack {
@@ -36,7 +29,7 @@ struct WatchRecordingView: View {
                 .opacity(recorder.isRecording ? 1 : 0)
                 .animation(.easeIn(duration: 0.25).delay(0.25), value: recorder.isRecording)
             }
-            .onChange(of: recorder.isRecording) { newValue in
+            .onChange(of: recorder.isRecording) { oldValue, newValue in
                 if !newValue {
                     dismiss()
                 }
@@ -55,7 +48,7 @@ struct WatchRecordingView: View {
         .task {
             recorder.startRecording()
         }
-        .onChange(of: appState.micPermission) { newValue in
+        .onChange(of: appState.micPermission) { oldValue, newValue in
             if newValue == .denied {
                 dismiss()
             }
@@ -70,10 +63,8 @@ struct WatchRecordingView: View {
     
 }
 
-struct WatchRecordingView_Previews: PreviewProvider {
-    static var previews: some View {
-        WatchRecordingView(recorder: AudioRecorder())
-    }
+#Preview {
+    WatchRecordingView(recorder: AudioRecorder())
 }
 
 struct StopRecordingButton: View {

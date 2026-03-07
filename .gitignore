@@ -86,14 +86,14 @@ fastlane/README.md
 
 iOSInjectionProject/
 
-# End of https://www.toptal.com/developers/gitignore/api/swift
+# Ad-hoc planning working files (except SOUL.md)
+.adhoc-planning/*
+!.adhoc-planning/SOUL.md
 
-.env
+# End of https://www.toptal.com/developers/gitignore/api/swift
 
 fastlane/metadata/review_information/
 fastlane/screenshots/**/*.html
-ArkanaKeys
-
 # Check in the Package.resolved
 # https://github.com/yonaskolb/XcodeGen/blob/master/Docs/Usage.md#swift-package
 # Taken from https://github.com/yonaskolb/XcodeGen/issues/743#issuecomment-1255426914
@@ -105,5 +105,3 @@ ArkanaKeys
 !*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
 *.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/*
 !*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
-
-Server/.wrangler/

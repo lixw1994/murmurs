@@ -265,14 +265,6 @@ public enum MyLocalizedKey: String {
   case prompt_content = "prompt_content"
   /**提示词 - 模版*/
   case prompt_content_template = "prompt_content_template"
-  /**Credits - 一口新饭*/
-  case credit_onenewbite_name = "credit_onenewbite_name"
-  /**Credits - 一口新饭 - url*/
-  case credit_onenewbite_url = "credit_onenewbite_url"
-  /**Credits - goldengrape*/
-  case credit_goldengrape_name = "credit_goldengrape_name"
-  /**Credits - goldengrape - url*/
-  case credit_goldengrape_url = "credit_goldengrape_url"
   /**Watch - 没有权限 - 标题*/
   case watch_permission_title = "watch_permission_title"
   /**Watch - 没有权限 - 内容*/
@@ -285,4 +277,24 @@ public enum MyLocalizedKey: String {
   case settings_sum_model = "settings_sum_model"
   /**设置 - 转写 - 模型*/
   case settings_trans_model = "settings_trans_model"
+  /**Readwise token 帮助链接*/
+  case readwise_token_help = "readwise_token_help"
+  /**断开 Readwise*/
+  case readwise_disconnect = "readwise_disconnect"
+  /**同步到 Readwise*/
+  case readwise_sync = "readwise_sync"
+  /**自动同步到 Readwise*/
+  case readwise_auto_sync = "readwise_auto_sync"
+  /**从 Readwise 删除*/
+  case readwise_unsync = "readwise_unsync"
+  /**AI 润色*/
+  case polish = "polish"
+  /**重新润色*/
+  case repolish = "repolish"
+  /**删除润色*/
+  case delete_polish = "delete_polish"
+  /**正在润色*/
+  case polishing = "polishing"
+  /**润色 - 服务器未配置*/
+  case polish_server_not_set = "polish_server_not_set"
 }

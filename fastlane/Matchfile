@@ -4,4 +4,6 @@ type("development")
 
 readonly(true)
 
-app_identifier(["app.tarbo.memo", "app.tarbo.memo.watch", "app.tarbo.memo.watch.widget", "app.tarbo.memo.widget"])
+team_id("TBPGXSQHVE")
+
+app_identifier(["com.tangyue.murmurs", "com.tangyue.murmurs.watch", "com.tangyue.murmurs.watch.widget", "com.tangyue.murmurs.widget"])

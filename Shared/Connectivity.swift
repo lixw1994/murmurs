@@ -1,10 +1,3 @@
-//
-//  Connectivity.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/08/04.
-//
-
 import Foundation
 import WatchConnectivity
 import XLog

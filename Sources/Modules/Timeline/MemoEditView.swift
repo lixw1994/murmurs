@@ -1,16 +1,10 @@
-//
-//  MemoEditView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/19.
-//
-
 import SwiftUI
+import SwiftData
 
 struct MemoEditView: View {
-    @ObservedObject var memo: MemoEntity
-    
-    @Environment(\.managedObjectContext) var moc
+    var memo: MemoEntity
+
+    @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @State private var content: String = ""
     @State private var time = Date()
@@ -25,7 +19,7 @@ struct MemoEditView: View {
         NavigationStack {
             Form {
                 Section {
-                    MyTextView(text: $content, minHeight: 120)
+                    MyTextView(text: $content, minHeight: 120, autoFocus: true)
                 } header: {
                     Text(L(.memo))
                 }
@@ -57,7 +51,9 @@ struct MemoEditView: View {
                     Button() {
                         memo.content = content
                         memo.updateCreationTime(time)
-                        try? moc.save()
+                        memo.updatedAt = Date()
+                        try? modelContext.save()
+                        NotificationCenter.default.post(name: .memoInserted, object: memo)
                         dismiss()
                     } label: {
                         Text(L(.save))
@@ -94,9 +90,8 @@ struct MemoEditView: View {
 }
 
 #if DEBUG
-struct MemoEditView_Previews: PreviewProvider {
-    static var previews: some View {
-        MemoEditView(memo: MemoEntity.preview())
-    }
+#Preview {
+    MemoEditView(memo: MemoEntity.preview(context: DataContainer.preview.context))
+        .modelContainer(DataContainer.preview.modelContainer)
 }
 #endif

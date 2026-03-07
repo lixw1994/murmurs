@@ -1,76 +1,96 @@
-//
-//  TimelineViewModel.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/19.
-//
-
 import Foundation
-import Combine
 import XLog
-import CoreData
+import SwiftData
 import SwiftUI
+import Observation
 
-class TimelineViewModel: ObservableObject {
-    @Published var showDeleteAlert = false
-    @Published var memoToDelete: MemoEntity? {
+@MainActor @Observable final class TimelineViewModel {
+    var showDeleteAlert = false
+    var memoToDelete: MemoEntity? {
         didSet {
             if memoToDelete != nil {
                 showDeleteAlert = true
             }
         }
     }
-    @Published var memoToShare: MemoEntity?
-    
-    @Published var transcribingMemos = Set<MemoEntity>()
-    @Published var failedMemos = [MemoEntity: Error]()
-    @Published var showReviewDialog = false
-    
-    @Published var isHoldingToRecord = false
-    
-    @Published var isMultiSelectMode = false
-    @Published var selectedMemos = Set<MemoEntity>()
-    
-    let recorder = AudioRecorder()
-    
-    @AppStorage("requested_review_at") var requestedReviewAt = Date(timeIntervalSince1970: 0).timeIntervalSince1970
-    
+    var memoToShare: MemoEntity?
+
+    var transcribingMemos = Set<MemoEntity>()
+    var polishingMemos = Set<MemoEntity>()
+    var syncingMemos = Set<MemoEntity>()
+    var failedMemos = [MemoEntity: Error]()
+    var polishFailedMemos = [MemoEntity: Error]()
+    var showReviewDialog = false
+
+    var isHoldingToRecord = false
+
+    var isMultiSelectMode = false
+    var selectedMemos = Set<MemoEntity>()
+
+    let recorder: any AudioRecorderProtocol
+
+    @ObservationIgnored @AppStorage("requested_review_at") var requestedReviewAt = Date(timeIntervalSince1970: 0).timeIntervalSince1970
+
+    private let transcription: TranscriptionServiceProtocol
+    private let readwiseClient: ReadwiseClientProtocol
+    private let aiClient: AIClientProtocol
+    private let context: ModelContext
+    private let notificationCenter: NotificationCenter
+    private let config: any ConfigProtocol
     private var transCount = 0
-    
-    init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(contextDidSave), name: .NSManagedObjectContextDidSave, object: nil)
+
+    init(transcription: TranscriptionServiceProtocol = Transcription.shared,
+         context: ModelContext = DataContainer.shared.context,
+         notificationCenter: NotificationCenter = .default,
+         config: any ConfigProtocol = Config.shared,
+         recorder: any AudioRecorderProtocol = AudioRecorder(),
+         readwiseClient: ReadwiseClientProtocol = ReadwiseClient.shared,
+         aiClient: AIClientProtocol = OpenAIClient.shared) {
+        self.transcription = transcription
+        self.context = context
+        self.notificationCenter = notificationCenter
+        self.config = config
+        self.recorder = recorder
+        self.readwiseClient = readwiseClient
+        self.aiClient = aiClient
+        notificationCenter.addObserver(self, selector: #selector(handleMemoInserted), name: .memoInserted, object: nil)
     }
-    
+
     deinit {
-        NotificationCenter.default.removeObserver(self)
+        notificationCenter.removeObserver(self)
     }
-    
-    @objc private func contextDidSave(notification: Notification) {
-        guard Config.shared.transEnabled else { return }
-        guard let userInfo = notification.userInfo else { return }
-        if let insertedObjects = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject>, !insertedObjects.isEmpty {
-            for obj in insertedObjects {
-                guard let memo = obj as? MemoEntity else { continue }
-                guard memo.needsTranscription else { continue }
-                transcribe(memo)
-            }
+
+    @objc private func handleMemoInserted(_ notification: Notification) {
+        guard let memo = notification.object as? MemoEntity else { return }
+
+        if config.transEnabled && memo.needsTranscription {
+            transcribe(memo)
+            return
+        }
+
+        if config.readwiseAutoSync {
+            syncToReadwise(memo)
         }
     }
-    
+
     func transcribe(_ memo: MemoEntity) {
         guard memo.file != nil else { return }
         failedMemos[memo] = nil
         transcribingMemos.insert(memo)
-        Transcription.shared.transcribe(memo) { [weak self] result in
+        transcription.transcribe(memo) { [weak self] result in
             self?.transcribingMemos.remove(memo)
             switch result {
             case .success(let text):
                 if memo.content != text {
                     memo.content = text
                     memo.transcribed = true
-                    try? DataContainer.shared.context.save()
+                    memo.updatedAt = Date()
+                    try? self?.context.save()
                     self?.transCount += 1
                     self?.requestReview()
+                    if self?.config.readwiseAutoSync == true {
+                        self?.syncToReadwise(memo)
+                    }
                 }
             case .failure(let error):
                 self?.failedMemos[memo] = error
@@ -78,16 +98,16 @@ class TimelineViewModel: ObservableObject {
             }
         }
     }
-    
+
     func toggleVisibility(_ memo: MemoEntity) {
         memo.isHidden.toggle()
         do {
-            try DataContainer.shared.context.save()
+            try context.save()
         } catch {
             XLog.error(error, source: "Timeline")
         }
     }
-    
+
     private func requestReview() {
         guard transCount > 5 else { return }
         let timeInterval = Date().timeIntervalSince1970
@@ -96,13 +116,92 @@ class TimelineViewModel: ObservableObject {
             requestedReviewAt = timeInterval
         }
     }
-    
-    
+
+    func syncToReadwise(_ memo: MemoEntity) {
+        guard config.isReadwiseSet else { return }
+        guard memo.needsSync else { return }
+        guard !syncingMemos.contains(memo) else { return }
+
+        syncingMemos.insert(memo)
+        Task {
+            do {
+                let documentId = try await readwiseClient.save(memo: memo)
+                memo.readwiseId = documentId
+                memo.syncedAt = Date()
+                try? context.save()
+            } catch {
+                XLog.error("Readwise sync failed: \(error)", source: "Timeline")
+            }
+            syncingMemos.remove(memo)
+        }
+    }
+
+    func unsyncFromReadwise(_ memo: MemoEntity) {
+        guard memo.readwiseId != nil else { return }
+        guard !syncingMemos.contains(memo) else { return }
+
+        syncingMemos.insert(memo)
+        Task {
+            do {
+                try await readwiseClient.delete(documentId: memo.readwiseId!)
+                memo.readwiseId = nil
+                memo.syncedAt = nil
+                try? context.save()
+            } catch {
+                XLog.error("Readwise unsync failed: \(error)", source: "Timeline")
+            }
+            syncingMemos.remove(memo)
+        }
+    }
+
+    func polish(_ memo: MemoEntity) {
+        guard config.isServerSet else {
+            polishFailedMemos[memo] = OpenAIError.badResponse(L(.polish_server_not_set))
+            return
+        }
+        guard !memo.viewContent.isEmpty else { return }
+        guard !polishingMemos.contains(memo) else { return }
+
+        polishFailedMemos[memo] = nil
+        polishingMemos.insert(memo)
+
+        Task {
+            do {
+                let stream = try await aiClient.polish(memo.viewContent, model: config.aiModel)
+                var result = ""
+                for try await text in stream {
+                    result += text
+                }
+                // Trim trailing newline that streaming may add
+                let polished = result.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !polished.isEmpty {
+                    memo.polishedContent = polished
+                    memo.updatedAt = Date()
+                    try? context.save()
+                }
+            } catch {
+                polishFailedMemos[memo] = error
+                XLog.error(error, source: "Timeline")
+            }
+            polishingMemos.remove(memo)
+        }
+    }
+
+    func deletePolish(_ memo: MemoEntity) {
+        memo.polishedContent = nil
+        memo.updatedAt = Date()
+        do {
+            try context.save()
+        } catch {
+            XLog.error(error, source: "Timeline")
+        }
+    }
+
     func beginHoldToRecord() {
         recorder.startRecording()
         isHoldingToRecord = true
     }
-    
+
     func endHoldToRecord() {
         isHoldingToRecord = false
         recorder.didCompleteCallback = { [weak self] in
@@ -113,25 +212,25 @@ class TimelineViewModel: ObservableObject {
         }
         recorder.stopRecording()
     }
-    
+
     func cancelHoldToRecord() {
         recorder.terminate()
         isHoldingToRecord = false
     }
-    
+
     private func saveVoice(_ voiceURL: URL) {
         guard let voiceURL = recorder.voiceFile else { return }
-        let moc = DataContainer.shared.context
-        let memo = MemoEntity.newEntity(moc: moc)
-        memo.file = voiceURL.lastPathComponent
+        let memo = MemoEntity(file: voiceURL.lastPathComponent)
+        context.insert(memo)
         do {
-            try moc.save()
+            try context.save()
             _ = try FileHelper.moveAudioFile(voiceURL)
+            NotificationCenter.default.post(name: .memoInserted, object: memo)
         } catch {
             XLog.error(error, source: "recording")
         }
     }
-    
+
     func toggleMemoSelection(_ memo: MemoEntity) {
         if selectedMemos.contains(memo) {
             selectedMemos.remove(memo)
@@ -139,18 +238,18 @@ class TimelineViewModel: ObservableObject {
             selectedMemos.insert(memo)
         }
     }
-    
-    func deleteSelectedMemos(moc: NSManagedObjectContext) {
+
+    func deleteSelectedMemos(context: ModelContext) {
         if isMultiSelectMode {
-            MemoEntity.deleteMemos(moc: moc, memos: selectedMemos)
+            MemoEntity.deleteMemos(context: context, memos: selectedMemos)
             selectedMemos.removeAll()
             isMultiSelectMode = false
             memoToDelete = nil
         } else {
             guard let memo = memoToDelete else { return }
-            MemoEntity.delete(moc: moc, memo: memo)
+            MemoEntity.delete(context: context, memo: memo)
             memoToDelete = nil
         }
     }
-    
+
 }

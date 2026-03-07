@@ -1,10 +1,3 @@
-//
-//  SnapshotTests.swift
-//  ALogUITests
-//
-//  Created by Xin Du on 2023/07/23.
-//
-
 import XCTest
 
 @MainActor

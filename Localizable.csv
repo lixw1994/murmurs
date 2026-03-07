@@ -1,13 +1,13 @@
 "key","comment","en",zh-Hans
 # Plist #
-"@CFBundleDisplayName","应用名称","ALog",ALog
+"@CFBundleDisplayName","应用名称","Murmurs",Murmurs
 # General #
-"app_name","应用名称","ALog",ALog
-"review_app","评价","Review ALog",评价 ALog
+"app_name","应用名称","Murmurs",Murmurs
+"review_app","评价","Review Murmurs",评价 Murmurs
 "rate_on_the_app_store","评分","Rate on the App Store",在 App Store 上评分
 "share_with_friends","分享给朋友","Share with Friends",分享给朋友
-"about_app","关于","About ALog",关于 ALog
-"company","公司","Tarbo Tech, LLC","Tarbo Tech, LLC"
+"about_app","关于","About Murmurs",关于 Murmurs
+"company","公司","Tangyue Tech, LLC","tangyue"
 "done","Done","Done",完成
 "cancel","Cancel","Cancel",取消
 "next","Next","Next",下一步
@@ -63,7 +63,7 @@ multi_delete_alert,批量删除确认,Are you sure you want to delete %d selecte
 # Premium #
 "premium","Premium","Premium",高级版
 "premium_one_time_upgrade","一次性付费升级","A one-time upgrade",一次性付费升级
-"premium_thanks","感谢升级","Thank you for upgrading to ALog Premium.",感谢您升级到 ALog 高级版
+"premium_thanks","感谢升级","Thank you for upgrading to Murmurs Premium.",感谢您升级到 Murmurs 高级版
 "premium_restore_purchase","恢复购买","Restore Purchase",恢复购买
 "premium_summary_num","总结数量","Summaries",总结数量
 "premium_prompt_num","提示词数量","Prompts",提示词数量
@@ -73,9 +73,9 @@ multi_delete_alert,批量删除确认,Are you sure you want to delete %d selecte
 "premium_go_premium","购买按钮 - 展示价格","Go Premium: %@",升级到高级版：%@
 "premium_upgrade_to_premium","升级到高级版","Upgrade to Premium",升级到高级版
 # Permission #
-"permission_mic_title","申请权限 - 标题","Allow ALog to access your microphone?",允许 ALog 访问你的麦克风吗？
+"permission_mic_title","申请权限 - 标题","Allow Murmurs to access your microphone?",允许 Murmurs 访问你的麦克风吗？
 "permission_mic_msg","申请权限 - 正文","You can update your choice at any time in Settings.",您可以随时在系统设置中更改你的选择。
-"permission_mic_denied_msg","申请权限 - 正文 (denied)","ALog will not work without access to the microphone.",没有麦克风访问权限，ALog 将无法正常工作。
+"permission_mic_denied_msg","申请权限 - 正文 (denied)","Murmurs will not work without access to the microphone.",没有麦克风访问权限，Murmurs 将无法正常工作。
 "permission_not_now","申请权限 - 以后再说","Not now",以后再说
 "permission_allow","申请权限 - 允许","Allow",允许
 "permission_open_settings","申请权限 - 打开设置","Open Settings",打开设置
@@ -159,14 +159,22 @@ I will ask you to:
 2. 总结日记中的关键要点
 3. 根据日记，对我生活做出的重要洞察并像一位心理专家/人生导师一样给出鼓励/安慰、分析、建议等"
 # Credits #
-"credit_onenewbite_name","Credits - 一口新饭","一口新饭",一口新饭
-"credit_onenewbite_url","Credits - 一口新饭 - url","https://www.youtube.com/watch?v=ZRv0Z-M7NqM",https://www.youtube.com/watch?v=ZRv0Z-M7NqM
-"credit_goldengrape_name","Credits - goldengrape","goldengrape",goldengrape
-"credit_goldengrape_url","Credits - goldengrape - url","https://quail.ink/goldengrape/p/write-diary-with-chatgpt-en",https://quail.ink/goldengrape/p/write-diary-with-chatgpt
 # Watch #
 "watch_permission_title","Watch - 没有权限 - 标题","Microphone Access",麦克风访问权限
-"watch_permission_msg","Watch - 没有权限 - 内容","ALog will not work without access to the microphone. You can enable access in Settings.",没有麦克风访问权限，ALog 将无法正常工作。您可以在系统设置种启用访问权限。
+"watch_permission_msg","Watch - 没有权限 - 内容","Murmurs will not work without access to the microphone. You can enable access in Settings.",没有麦克风访问权限，Murmurs 将无法正常工作。您可以在系统设置种启用访问权限。
 "watch_recents","Watch - 最近录音","Recents",最近录音
 "watch_recents_empty","Watch - 没有录音","No Recordings",无录音
 "settings_sum_model","设置 - 总结 - 模型","Summarization Model","总结模型"
 "settings_trans_model","设置 - 转写 - 模型","Transcription Model","转录模型"
+# Readwise #
+"readwise_token_help","Readwise token 帮助链接","Get your token at readwise.io/access_token",在 readwise.io/access_token 获取你的 Token
+"readwise_disconnect","断开 Readwise","Disconnect",断开连接
+"readwise_sync","同步到 Readwise","Sync to Readwise",同步到 Readwise
+"readwise_auto_sync","自动同步到 Readwise","Auto Sync",自动同步
+"readwise_unsync","从 Readwise 删除","Remove from Readwise",从 Readwise 删除
+# AI Polish #
+"polish","AI 润色","AI Polish",AI 润色
+"repolish","重新润色","Re-polish",重新润色
+"delete_polish","删除润色","Delete Polish",删除润色
+"polishing","正在润色","Polishing ...",正在润色 ...
+"polish_server_not_set","润色 - 服务器未配置","Please configure the AI server in Settings first.",请先在设置中配置 AI 服务器。

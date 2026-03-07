@@ -1,10 +1,3 @@
-//
-//  WatchPlayerView.swift
-//  ALogWatch
-//
-//  Created by Xin Du on 2023/08/06.
-//
-
 import SwiftUI
 
 struct WatchPlayerView: View {
@@ -16,7 +9,7 @@ struct WatchPlayerView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject var player: AudioPlayer
     @State private var showingActionSheet = false
-    @EnvironmentObject var dc: DataContainer
+    @Environment(DataContainer.self) var dc
     
     
     init(recording: RecordingEntity) {

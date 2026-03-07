@@ -1,10 +1,3 @@
-//
-//  Config.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/10.
-//
-
 import Foundation
 import KeychainAccess
 import SwiftUI
@@ -15,17 +8,9 @@ struct StartupOption {
     static let createNote = "create_note"
 }
 
-class Config: ObservableObject {
+class Config: ObservableObject, ConfigProtocol {
     @AppStorage("day_start_time") var dayStartTime = 2
-    @AppStorage("dark_mode") var darkMode = DarkMode.dark
-    @AppStorage("server_type") var serverType = ServerType.app {
-        didSet {
-            if transProvider == .openai && !TranscriptionModel.isModelAvailable(transModel, for: serverType) {
-                transModel = .whisper_1
-            }
-        }
-    }
-    
+    @AppStorage("dark_mode") var darkMode = DarkMode.auto
     @AppStorage("trans_enabled") var transEnabled = false
     @AppStorage("trans_provider") var transProvider = TranscriptionProvider.apple
     @AppStorage("trans_lang") var transLang = TranscriptionLang.auto
@@ -55,18 +40,39 @@ class Config: ObservableObject {
     /// Auto Record / Create Note On Startup
     @AppStorage("auto_start_on_startup") var autoStartOnStartup = ""
     
+    // MARK: - Readwise
+
+    @AppStorage("readwise_sync_enabled") var readwiseSyncEnabled = false
+    @AppStorage("readwise_auto_sync") var readwiseAutoSync = false
+
+    @Published var readwiseToken: String = "" {
+        didSet {
+            if readwiseToken.isEmpty {
+                keychain[READWISE_KEY_NAME] = nil
+            } else {
+                keychain[string: READWISE_KEY_NAME] = readwiseToken
+            }
+        }
+    }
+
+    var isReadwiseSet: Bool {
+        readwiseSyncEnabled && !readwiseToken.isEmpty
+    }
+
     @Published var colorScheme = ColorScheme.light
-    
+
     static let shared = Config()
-    
+
     private let keychain = Keychain(service: Bundle.main.bundleIdentifier!)
-    
+
     private let KEY_NAME = "openai_api_key"
-    
+    private let READWISE_KEY_NAME = "readwise_token"
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     private init() {
         serverAPIKey = keychain[string: KEY_NAME] ?? ""
+        readwiseToken = keychain[string: READWISE_KEY_NAME] ?? ""
         validateHost()
     }
     
@@ -87,8 +93,7 @@ class Config: ObservableObject {
     @Published var isServerSet: Bool = false
     
     var isServerValid: Bool {
-        guard serverType == .custom else { return true }
-        if let _ = URL(string: serverHost) {
+        if let _ = URL(string: serverHost), !serverHost.isEmpty {
             return true
         }
         return false

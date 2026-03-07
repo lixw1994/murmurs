@@ -1,10 +1,3 @@
-//
-//  Localization.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/09.
-//
-
 import Foundation
 import XLang
 

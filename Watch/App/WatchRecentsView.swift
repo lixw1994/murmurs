@@ -1,14 +1,8 @@
-//
-//  RecentsView.swift
-//  ALogWatch
-//
-//  Created by Xin Du on 2023/08/05.
-//
-
 import SwiftUI
+import SwiftData
 
 struct WatchRecentsView: View {
-    @FetchRequest<RecordingEntity>(fetchRequest: RecordingEntity.recentTen) var items
+    @Query(sort: \RecordingEntity.createdAt, order: .reverse) var items: [RecordingEntity]
     
     @State private var selectedItem: RecordingEntity?
     
@@ -55,8 +49,6 @@ struct WatchRecentsView: View {
     }
 }
 
-struct RecentsView_Previews: PreviewProvider {
-    static var previews: some View {
-        WatchRecentsView()
-    }
+#Preview {
+    WatchRecentsView()
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct ALogApp: App {
+struct MurmursApp: App {
     @UIApplicationDelegateAdaptor var delegate: AppDelegate
     
     let container = DataContainer.shared
@@ -9,17 +9,18 @@ struct ALogApp: App {
     let conn = Connectivity.shared
     
     @StateObject var config = Config.shared
-    
+    @AppStorage("dark_mode") var darkMode = DarkMode.auto
+
     var body: some Scene {
         WindowGroup {
             MainView()
                 .tint(Color.app_accent)
-                .environmentObject(container)
-                .environmentObject(appState)
+                .environment(container)
+                .environment(appState)
                 .environmentObject(config)
                 .environmentObject(conn)
-                .environment(\.managedObjectContext, container.context)
-                .preferredColorScheme(.dark)
+                .modelContainer(container.modelContainer)
+                .preferredColorScheme(darkMode.colorScheme)
                 .onOpenURL { url in
                     appState.openURL(url)
                 }

@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>AppStoreURL</key>
-	<string>https://apps.apple.com/us/app/alog/id6451082482</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -24,10 +22,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>app.tarbo.memo</string>
+			<string>com.tangyue.murmurs</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>alog</string>
+				<string>murmurs</string>
 			</array>
 		</dict>
 	</array>
@@ -37,10 +35,8 @@
 	<string>${GIT_HASH}</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2024 Tarbo Tech, LLC</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>ALog requires access to your microphone so that you can record entries in your journal.</string>
+	<string>Murmurs requires access to your microphone so that you can record entries in your journal.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Access to speech recognition functionality is required.</string>
 	<key>UIBackgroundModes</key>

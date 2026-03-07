@@ -1,10 +1,3 @@
-//
-//  QuickAction.swift
-//  ALog
-//
-//  Created by Xin Du on 2024/05/11.
-//
-
 import UIKit
 
 enum QuickAction: String {

@@ -1,10 +1,3 @@
-//
-//  SpeechRecognizer.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/16.
-//
-
 import Foundation
 import Speech
 import XLog

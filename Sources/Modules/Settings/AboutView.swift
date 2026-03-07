@@ -1,10 +1,3 @@
-//
-//  AboutView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/22.
-//
-
 import SwiftUI
 
 struct AboutView: View {
@@ -20,7 +13,7 @@ struct AboutView: View {
                     .font(.system(.largeTitle, design: .monospaced))
                     .padding(.bottom, 20)
                     
-                    Text("by " + L(.company))
+                    Text("by tangyue")
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
@@ -33,18 +26,7 @@ struct AboutView: View {
             .headerProminence(.increased)
             
             Section {
-                socialRow("Email", icon: "icon_email", color: .primary, url: "mailto:\(Constants.Contact.email)")
-                socialRow("Twitter", icon: "icon_twitter", color: .primary, url: Constants.Contact.twitter)
                 socialRow("Github", icon: "icon_github", color: .primary, url: Constants.Contact.github)
-            }
-            
-            Section {
-                creditRow(L(.credit_onenewbite_name), url: L(.credit_onenewbite_url))
-                creditRow(L(.credit_goldengrape_name),url: L(.credit_goldengrape_url))
-                creditRow("Cʜᴇɴɢ", url: "https://twitter.com/scomper")
-                creditRow("Yifan Men", url: "https://github.com/menyf")
-            } header: {
-                Text("Credits")
             }
             
             
@@ -110,9 +92,7 @@ struct AboutView: View {
     }
 }
 
-struct AboutView_Previews: PreviewProvider {
-    static var previews: some View {
-        AboutView()
-            .preferredColorScheme(.dark)
-    }
+#Preview {
+    AboutView()
+        .preferredColorScheme(.dark)
 }

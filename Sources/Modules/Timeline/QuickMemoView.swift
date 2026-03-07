@@ -1,15 +1,8 @@
-//
-//  QuickMemoView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/09/28.
-//
-
 import SwiftUI
 
 struct QuickMemoView: View {
-    
-    @StateObject var vm = QuickMemoViewModel()
+
+    @State var vm = QuickMemoViewModel()
     @Environment(\.dismiss) var dismiss
     @FocusState private var focused: Bool
     

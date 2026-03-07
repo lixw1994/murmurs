@@ -1,10 +1,3 @@
-//
-//  RecordingStatusView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/13.
-//
-
 import SwiftUI
 
 struct RecordingStatusView: View {
@@ -29,8 +22,6 @@ struct RecordingStatusView: View {
     }
 }
 
-struct RecordingStatusView_Previews: PreviewProvider {
-    static var previews: some View {
-        RecordingStatusView()
-    }
+#Preview {
+    RecordingStatusView()
 }

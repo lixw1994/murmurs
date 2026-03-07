@@ -1,10 +1,3 @@
-//
-//  TryAgainButtonStyle.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/22.
-//
-
 import SwiftUI
 
 struct TryAgainButtonStyle: ButtonStyle {
@@ -19,17 +12,15 @@ struct TryAgainButtonStyle: ButtonStyle {
     
 }
 
-struct TryAgainButtonStyle_Previews: PreviewProvider {
-    static var previews: some View {
-        Button {
-            
-        } label: {
-            HStack {
-                Image(systemName: "arrow.clockwise")
-                Text("Try Again")
-            }
+#Preview {
+    Button {
+
+    } label: {
+        HStack {
+            Image(systemName: "arrow.clockwise")
+            Text("Try Again")
         }
-        .buttonStyle(TryAgainButtonStyle())
-        .preferredColorScheme(.dark)
     }
+    .buttonStyle(TryAgainButtonStyle())
+    .preferredColorScheme(.dark)
 }

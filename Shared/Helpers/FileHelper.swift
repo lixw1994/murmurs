@@ -1,10 +1,3 @@
-//
-//  FileHelper.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/15.
-//
-
 import Foundation
 import AVFoundation
 import XLog

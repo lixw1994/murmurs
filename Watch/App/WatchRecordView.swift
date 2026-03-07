@@ -1,21 +1,15 @@
-//
-//  WatchRecordView.swift
-//  ALogWatch
-//
-//  Created by Xin Du on 2023/08/04.
-//
-
 import SwiftUI
 import XLog
 
 struct WatchRecordView: View {
     @StateObject var recorder = AudioRecorder()
-    @EnvironmentObject var dc: DataContainer
-    @EnvironmentObject var appState: WatchAppState
+    @Environment(DataContainer.self) var dc
+    @Environment(WatchAppState.self) var appState
     @EnvironmentObject var conn: Connectivity
-    @EnvironmentObject var vm: WatchViewModel
+    @Environment(WatchViewModel.self) var vm
     
     var body: some View {
+        @Bindable var appState = appState
         NavigationView {
             ZStack {
                 Color.watch_bg
@@ -27,7 +21,7 @@ struct WatchRecordView: View {
             } message: {
                 Text(L(.watch_permission_msg))
             }
-            .onChange(of: recorder.isCompleted) { newValue in
+            .onChange(of: recorder.isCompleted) { oldValue, newValue in
                 if newValue {
                     vm.saveFile(recorder.voiceFile!)
                 }
@@ -71,9 +65,7 @@ struct WatchRecordView: View {
     
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        WatchRecordView()
-            .environmentObject(WatchAppState.shared)
-    }
+#Preview {
+    WatchRecordView()
+        .environment(WatchAppState.shared)
 }

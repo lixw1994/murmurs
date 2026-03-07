@@ -1,10 +1,3 @@
-//
-//  ShareViewController.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/08/19.
-//
-
 import SwiftUI
 
 // Taken from https://stackoverflow.com/questions/69693871/how-to-open-share-sheet-from-presented-sheet

@@ -1,15 +1,8 @@
-//
-//  PremiumView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/29.
-//
-
 import SwiftUI
 import ConfettiSwiftUI
 
 struct PremiumView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
     @Environment(\.dismiss) var dismiss
     
     @StateObject var iap = IAPManager.shared
@@ -32,7 +25,7 @@ struct PremiumView: View {
             
         }
         .padding(.horizontal, 30)
-        .onChange(of: iap.state) { newValue in
+        .onChange(of: iap.state) { oldValue, newValue in
             if case .purchased = newValue {
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
                 counter += 1
@@ -49,7 +42,7 @@ struct PremiumView: View {
     private func titleView() -> some View {
         VStack(spacing: 20) {
             Group {
-                Text("ALog ") + Text(L(.premium).capitalized).foregroundColor(.orange)
+                Text("Murmurs ") + Text(L(.premium).capitalized).foregroundColor(.orange)
             }
             .font(.system(size: 35, weight: .black, design: .monospaced))
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -176,9 +169,7 @@ struct PremiumView: View {
     
 }
 
-struct PremiumView_Previews: PreviewProvider {
-    static var previews: some View {
-        PremiumView()
-            .preferredColorScheme(.dark)
-    }
+#Preview {
+    PremiumView()
+        .preferredColorScheme(.dark)
 }

@@ -1,10 +1,3 @@
-//
-//  DestructiveButtonStyle.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/24.
-//
-
 import SwiftUI
 
 struct DestructiveButtonStyle: ButtonStyle {
@@ -19,12 +12,10 @@ struct DestructiveButtonStyle: ButtonStyle {
     }
 }
 
-struct DestructiveButtonStyle_Previews: PreviewProvider {
-    static var previews: some View {
-        Button {
-        } label: {
-            Image(systemName: "trash")
-        }
-        .buttonStyle( DestructiveButtonStyle() )
+#Preview {
+    Button {
+    } label: {
+        Image(systemName: "trash")
     }
+    .buttonStyle( DestructiveButtonStyle() )
 }

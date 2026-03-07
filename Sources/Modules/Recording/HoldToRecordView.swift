@@ -1,10 +1,3 @@
-//
-//  HoldToRecordView.swift
-//  ALog
-//
-//  Created by Xin Du on 2024/06/02.
-//
-
 import SwiftUI
 
 enum HoldToRecordState {

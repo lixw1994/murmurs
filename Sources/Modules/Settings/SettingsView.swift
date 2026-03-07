@@ -1,16 +1,9 @@
-//
-//  SettingsView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/10.
-//
-
 import SwiftUI
 import XLang
 
 struct SettingsView: View {
     @EnvironmentObject var config: Config
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
     @EnvironmentObject var appDelegate: AppDelegate
     
     @State private var showPremium = false
@@ -25,8 +18,6 @@ struct SettingsView: View {
     }
     
     @AppStorage("trans_privacy_warning_displayed") var transWarningDisplayed = false
-    
-    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         NavigationStack {
@@ -51,19 +42,17 @@ struct SettingsView: View {
             }
             .navigationTitle(L(.settings_title))
             .navigationBarTitleDisplayMode(.inline)
-            .onChange(of: config.transEnabled) { newValue in
+            .onChange(of: config.transEnabled) { oldValue, newValue in
                 if newValue && transWarningDisplayed == false {
                     showTransWarning = true
                 }
-            }
-            .onChange(of: config.darkMode) { newValue in
-                dismiss()
             }
         }
     }
     
     @ViewBuilder
     private var sectionGeneral: some View {
+        @Bindable var appState = appState
         Section {
             Picker(selection: $config.dayStartTime) {
                 ForEach(0..<9) { n in
@@ -83,6 +72,15 @@ struct SettingsView: View {
                 Text(L(.settings_app_language))
             }
             
+            Picker(selection: $config.darkMode) {
+                ForEach(DarkMode.allCases, id: \.self) { mode in
+                    Text(mode.displayName)
+                        .tag(mode)
+                }
+            } label: {
+                Text(L(.settings_app_appearance))
+            }
+
             MyToggle(isOn: $config.autoSave) {
                 Text(L(.settings_auto_save))
             }
@@ -99,40 +97,22 @@ struct SettingsView: View {
     @ViewBuilder
     private var sectionServer: some View {
         Section {
-            Picker(selection: $config.serverType) {
-                ForEach(ServerType.allCases, id: \.self) { server in
-                    Text(server.displayName)
-                        .tag(server)
-                }
-            } label: {
-                Text(L(.settings_server))
-            }
-            
-            if config.serverType == .custom {
-                NavigationLink(destination: ServerSettingsView()) {
-                    HStack {
-                        Text(L(.settings_server_settings))
-                        Spacer()
-                        
-                        if config.isServerSet {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                        } else {
-                            Image(systemName: "exclamationmark.circle.fill")
-                                .foregroundColor(.yellow)
-                        }
-                        
+            NavigationLink(destination: ServerSettingsView()) {
+                HStack {
+                    Text(L(.settings_server_settings))
+                    Spacer()
+
+                    if config.isServerSet {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    } else {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundColor(.yellow)
                     }
                 }
             }
         } header: {
             Text(L(.settings_server))
-        } footer: {
-            if config.serverType == .app {
-                Text(L(.settings_server_desc))
-            } else {
-                Text(" ")
-            }
         }
     }
     
@@ -162,16 +142,9 @@ struct SettingsView: View {
                 
                 if config.transProvider == .openai {
                     Picker(selection: $config.transModel) {
-                        if config.serverType == .app {
-                            ForEach(TranscriptionModel.defaultServerModels, id: \.self) { item in
-                                Text(item.displayName)
-                                    .tag(item)
-                            }
-                        } else if config.serverType == .custom {
-                            ForEach(TranscriptionModel.customServerModels, id: \.self) { item in
-                                Text(item.displayName)
-                                    .tag(item)
-                            }
+                        ForEach(TranscriptionModel.allCases, id: \.self) { item in
+                            Text(item.displayName)
+                                .tag(item)
                         }
                     } label: {
                         Text(L(.settings_trans_model))
@@ -200,23 +173,14 @@ struct SettingsView: View {
             }
             
             if config.sumEnabled {
-                if config.serverType == .custom {
-                    Picker(selection: $config.aiModel) {
-                        ForEach(OpenAIChatModel.allCases, id: \.self) {
-                            Text($0.displayName)
-                        }
-                    } label: {
-                        Text(L(.settings_sum_model))
+                Picker(selection: $config.aiModel) {
+                    ForEach(OpenAIChatModel.allCases, id: \.self) {
+                        Text($0.displayName)
                     }
-                } else {
-                    HStack {
-                        Text(L(.settings_sum_model))
-                        Spacer()
-                        Text(OpenAIChatModel.gpt_4o_mini.displayName)
-                            .foregroundColor(.secondary)
-                    }
+                } label: {
+                    Text(L(.settings_sum_model))
                 }
-                
+
                 NavigationLink {
                     PromptsView()
                 } label: {
@@ -247,6 +211,17 @@ struct SettingsView: View {
     @ViewBuilder
     private var sectionData: some View {
         Section {
+            NavigationLink(destination: ReadwiseSettingsView()) {
+                HStack {
+                    Text("Readwise")
+                    Spacer()
+                    if config.isReadwiseSet {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+
             Button {
                 if appState.isPremium {
                     showExport = true
@@ -334,8 +309,6 @@ struct SettingsView: View {
     }
 }
 
-struct SettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SettingsView()
-    }
+#Preview {
+    SettingsView()
 }

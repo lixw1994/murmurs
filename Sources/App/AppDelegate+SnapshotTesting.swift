@@ -1,40 +1,33 @@
-//
-//  AppDelegate+SnapshotTesting.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/23.
-//
-
 import Foundation
+import SwiftData
 import XLang
 
 #if SNAPSHOT
 extension AppDelegate {
     func setupSnapshotTestEnvironment() {
-        let moc = DataContainer.shared.context
+        let context = DataContainer.shared.context
         let config = Config.shared
-        
+
         AppState.shared.isPremium = true
-        
+
         // MARK: - RESET SETTINGS
-        config.serverType = .custom
         config.serverHost = "http://127.0.0.1:8888/"
         config.aiModel = .gpt_4
         config.sumEnabled = true
         config.transEnabled = true
         config.transLang = .en
         config.transProvider = .openai
-        
+
         // MARK: - RESET MEMOS
-        let request = MemoEntity.fetchRequest()
-        let results = try! moc.fetch(request)
+        let memoDescriptor = FetchDescriptor<MemoEntity>()
+        let results = try! context.fetch(memoDescriptor)
         for result in results {
-            moc.delete(result)
+            context.delete(result)
         }
-        
+
         // MARK: - Fake Data
         let items: [[String]]
-        
+
         if Bundle.main.preferredLocalizations.first! == "zh-Hans" {
             config.transLang = .zh_hans
             items = [
@@ -60,30 +53,27 @@ extension AppDelegate {
                 ["22:23", "Lights out. Big day tomorrow, looking forward to it."]
             ]
         }
-        
+
         for item in items {
-            let m = MemoEntity(context: moc)
-            m.id = UUID().uuidString
-            m.content = item[1]
-            m.file = "fake_path"
+            let m = MemoEntity(content: item[1], file: "fake_path")
+            m.entityId = UUID().uuidString
             m.day = Int32(DateHelper.identifier(from: Date()))
             m.timezone = "Asia/Tokyo"
             let time = item[0].split(separator: ":").map { Int($0)! }
             m.createdAt = DateHelper.timeToDate(h: time[0], m: time[1])
+            context.insert(m)
         }
-        
+
         // MARK: - RESET PROMPTS
-        let prompts = try! moc.fetch(PromptEntity.fetchRequest())
+        let promptDescriptor = FetchDescriptor<PromptEntity>()
+        let prompts = try! context.fetch(promptDescriptor)
         for prompt in prompts {
-            moc.delete(prompt)
+            context.delete(prompt)
         }
-        
-        let prompt = PromptEntity(context: moc)
-        prompt.title = L(._default)
-        prompt.temperature = 0.5
-        prompt.content = L(.prompt_content_template)
-        prompt.createdAt = Date()
-        try! moc.save()
+
+        let prompt = PromptEntity(title: L(._default), content: L(.prompt_content_template), temperature: 0.5)
+        context.insert(prompt)
+        try! context.save()
     }
 }
 #endif

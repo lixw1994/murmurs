@@ -1,10 +1,3 @@
-//
-//  SecondaryButtonStyle.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/13.
-//
-
 import SwiftUI
 
 struct SecondaryButtonStyle: ButtonStyle {
@@ -18,12 +11,10 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
-struct SecondaryButtonStyle_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack {
-            Button("Cancel") {
-            }
-            .buttonStyle(SecondaryButtonStyle())
+#Preview {
+    VStack {
+        Button("Cancel") {
         }
+        .buttonStyle(SecondaryButtonStyle())
     }
 }

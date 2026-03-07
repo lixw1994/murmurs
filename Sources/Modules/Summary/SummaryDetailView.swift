@@ -1,23 +1,18 @@
-//
-//  SummaryDetailView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/22.
-//
-
 import SwiftUI
+import SwiftData
 import XLog
 import TPPDF
 
 struct SummaryDetailView: View {
-    @ObservedObject var summary: SummaryEntity
-    
-    @Environment(\.managedObjectContext) var moc
+    var summary: SummaryEntity
+
+    @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
     
     @State private var showDeleteAlert = false
-    
+    @State private var isSyncing = false
+
     var body: some View {
         ScrollView(.vertical) {
             VStack {
@@ -48,6 +43,26 @@ struct SummaryDetailView: View {
                             Text(L(.edit))
                         }
                         
+                        if Config.shared.isReadwiseSet && summary.needsSync {
+                            Button {
+                                syncToReadwise()
+                            } label: {
+                                Image(systemName: "arrow.clockwise.icloud")
+                                Text(L(.readwise_sync))
+                            }
+                            .disabled(isSyncing)
+                        }
+
+                        if Config.shared.isReadwiseSet && summary.readwiseId != nil {
+                            Button(role: .destructive) {
+                                unsyncFromReadwise()
+                            } label: {
+                                Image(systemName: "xmark.icloud")
+                                Text(L(.readwise_unsync))
+                            }
+                            .disabled(isSyncing)
+                        }
+
                         Menu(L(.export)) {
                             Button {
                                 ShareHelper.share(items: [markdown()])
@@ -75,8 +90,8 @@ struct SummaryDetailView: View {
             }
             .alert(isPresented: $showDeleteAlert) {
                 Alert(title: Text(L(.are_you_sure)), primaryButton: .destructive(Text(L(.delete))) {
-                    moc.delete(summary)
-                    try? moc.save()
+                    modelContext.delete(summary)
+                    try? modelContext.save()
                     dismiss()
                 }, secondaryButton: .cancel())
             }
@@ -85,6 +100,37 @@ struct SummaryDetailView: View {
         .navigationTitle(summary.viewTitle)
     }
     
+    private func syncToReadwise() {
+        isSyncing = true
+        Task {
+            do {
+                let documentId = try await ReadwiseClient.shared.save(summary: summary)
+                summary.readwiseId = documentId
+                summary.syncedAt = Date()
+                try? modelContext.save()
+            } catch {
+                XLog.error("Readwise sync failed: \(error)", source: "Summary")
+            }
+            isSyncing = false
+        }
+    }
+
+    private func unsyncFromReadwise() {
+        guard let documentId = summary.readwiseId else { return }
+        isSyncing = true
+        Task {
+            do {
+                try await ReadwiseClient.shared.delete(documentId: documentId)
+                summary.readwiseId = nil
+                summary.syncedAt = nil
+                try? modelContext.save()
+            } catch {
+                XLog.error("Readwise unsync failed: \(error)", source: "Summary")
+            }
+            isSyncing = false
+        }
+    }
+
     private func markdown() -> URL {
         let url = fileName(ext: "md")
         try? summary.shareContent.write(to: url, atomically: true, encoding: .utf8)
@@ -117,11 +163,9 @@ struct SummaryDetailView: View {
 }
 
 #if DEBUG
-struct SummaryDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        SummaryDetailView(summary: SummaryEntity.preview())
-            .preferredColorScheme(.dark)
-            .environment(\.managedObjectContext, DataContainer.preview.context)
-    }
+#Preview {
+    SummaryDetailView(summary: SummaryEntity.preview(context: DataContainer.preview.context))
+        .preferredColorScheme(.dark)
+        .modelContainer(DataContainer.preview.modelContainer)
 }
 #endif

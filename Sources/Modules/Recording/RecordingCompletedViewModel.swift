@@ -1,60 +1,64 @@
-//
-//  RecordingCompletedViewModel.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/15.
-//
-
 import Foundation
-import CoreData
+import SwiftData
 import XLog
+import Observation
 
-class RecordingCompletedViewModel: ObservableObject {
+@MainActor @Observable final class RecordingCompletedViewModel {
     var voiceURL: URL
-    let container = DataContainer.shared
-    let moc: NSManagedObjectContext
-    let config = Config.shared
-    let trans = Transcription()
-    
-    @Published var hasTranscribed = false
-    @Published var isTranscribing = false
-    @Published var transcribedText: String? {
+    let context: ModelContext
+    let config: any ConfigProtocol
+    private let transcription: TranscriptionServiceProtocol
+
+    var hasTranscribed = false
+    var isTranscribing = false
+    var transcribedText: String? {
         didSet {
             hasTranscribed = true
             content = transcribedText ?? ""
         }
     }
-    
-    @Published var transcriptionError: String?
-    @Published var saved = false
-    @Published var content = ""
-    @Published var duration: Double = 0
-    @Published var canBeSaved: Bool = false
-    
-    init(voicePath: URL) {
+
+    var transcriptionError: String?
+    var saved = false
+    var content = ""
+    var duration: Double = 0
+    var canBeSaved: Bool = false
+
+    init(voicePath: URL,
+         preTranscribedText: String? = nil,
+         context: ModelContext = DataContainer.shared.context,
+         config: any ConfigProtocol = Config.shared,
+         transcription: TranscriptionServiceProtocol = Transcription.shared) {
         self.voiceURL = voicePath
-        moc = container.context
-        
+        self.context = context
+        self.config = config
+        self.transcription = transcription
+
+        if let preTranscribedText {
+            self.transcribedText = preTranscribedText
+        }
+
         Task { @MainActor in
             duration = await FileHelper.getAudioDuration(voiceURL)
             canBeSaved = true
         }
     }
-    
+
     deinit {
         #if DEBUG
             XLog.debug("✖︎ RecordingCompletedViewModel", source: "Recording")
         #endif
     }
-    
+
     func transcribe() {
         guard config.transEnabled else { return }
         guard isTranscribing == false else { return }
-        
+        guard !hasTranscribed else { return } // Skip if already pre-transcribed
+
         Task { @MainActor in
             isTranscribing = true
             do {
-                let txt = try await trans.transcribe(voiceURL: voiceURL, provider: config.transProvider, lang: config.transLang)
+                let txt = try await transcription.transcribe(voiceURL: voiceURL, provider: config.transProvider, lang: config.transLang)
                 transcribedText = txt
             } catch {
                 transcriptionError = ErrorHelper.desc(error)
@@ -62,22 +66,21 @@ class RecordingCompletedViewModel: ObservableObject {
             isTranscribing = false
         }
     }
-    
+
     func save() {
-        let memo = MemoEntity.newEntity(moc: moc)
-        memo.file = voiceURL.lastPathComponent
-        memo.content = content
+        let memo = MemoEntity(content: content, file: voiceURL.lastPathComponent, duration: duration)
         memo.transcribed = hasTranscribed
-        memo.duration = duration
+        context.insert(memo)
         do {
-            try moc.save()
+            try context.save()
             _ = try FileHelper.moveAudioFile(voiceURL)
             saved = true
+            NotificationCenter.default.post(name: .memoInserted, object: memo)
         } catch {
             XLog.error(error, source: "recording")
         }
     }
-    
+
     func delete() {
         do {
             XLog.debug("Deleting temporary audio file at \(voiceURL.absoluteString)", source: "recording")

@@ -1,21 +1,15 @@
-//
-//  WatchAppState.swift
-//  ALogWatch
-//
-//  Created by Xin Du on 2023/08/05.
-//
-
 import Foundation
 import AVFoundation
 import WatchKit
+import Observation
 
-class WatchAppState: ObservableObject {
+@Observable final class WatchAppState {
     static let shared = WatchAppState()
     private init() {}
-    
-    @Published var micPermission: AVAudioSession.RecordPermission = .undetermined
-    @Published var showRecording = false
-    @Published var showPermissionAlert = false
+
+    var micPermission: AVAudioSession.RecordPermission = .undetermined
+    var showRecording = false
+    var showPermissionAlert = false
     
     func checkMicPermission() {
         micPermission = AVAudioSession.sharedInstance().recordPermission

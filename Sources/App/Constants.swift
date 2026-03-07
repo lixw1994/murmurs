@@ -1,27 +1,17 @@
-//
-//  Constants.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/14.
-//
-
 import Foundation
 
 struct Constants {
     
-    static let api_base_url = URL(string: "https://api.alog.tarbotech.com/")!
-    static let user_agent = "ALog \(AppInfo.appVersion)"
+    static let user_agent = "Murmurs \(AppInfo.appVersion)"
     
     struct Contact {
-        static let twitter = "https://twitter.com/tarbo_du"
-        static let github = "https://github.com/duxins"
-        static let email = "support@tarbotech.com"
+        static let github = "https://github.com/lixw1994"
     }
-    
+
     struct Legal {
-        static let repo_url = "https://github.com/duxins/alog"
-        static let privacy_policy_url = "https://alog.tarbotech.com/privacy_policy.html"
-        static let terms_url = "https://alog.tarbotech.com/terms.html"
+        static let repo_url = "https://github.com/lixw1994/murmurs"
+        static let privacy_policy_url = "https://lixw1994.github.io/murmurs/privacy_policy.html"
+        static let terms_url = "https://lixw1994.github.io/murmurs/terms.html"
     }
     
     struct OpenAI {
@@ -34,7 +24,7 @@ struct Constants {
     }
     
     struct IAP {
-        static let premiumProductId = "app.tarbo.memo.premium"
+        static let premiumProductId = "com.tangyue.murmurs.premium"
     }
     
     struct Limit {

@@ -1,14 +1,7 @@
-//
-//  AddSummaryMemoSelectionView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/08/16.
-//
-
 import SwiftUI
 
 struct AddSummaryMemoSelectionView: View {
-    @EnvironmentObject var vm: AddSummaryViewModel
+    @Environment(AddSummaryViewModel.self) var vm
     
     var body: some View {
         ZStack {
@@ -83,15 +76,13 @@ struct AddSummaryMemoSelectionView: View {
 
 
 #if DEBUG
-struct AddSummaryMemoSelectionView_Previews: PreviewProvider {
-    static var vm = AddSummaryViewModel(item: SummaryItem.day(20230816), moc: DataContainer.preview.context)
-    static var previews: some View {
-        AddSummaryMemoSelectionView()
-            .environmentObject(vm)
-            .preferredColorScheme(.dark)
-            .task {
-                vm.fetchEntries()
-            }
-    }
+#Preview {
+    let vm = AddSummaryViewModel(item: SummaryItem.day(20230816), context: DataContainer.preview.context)
+    AddSummaryMemoSelectionView()
+        .environment(vm)
+        .preferredColorScheme(.dark)
+        .task {
+            vm.fetchEntries()
+        }
 }
 #endif

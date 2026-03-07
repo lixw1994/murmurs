@@ -1,10 +1,3 @@
-//
-//  IAPManager.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/27.
-//
-
 import Foundation
 import StoreKit
 import XLog

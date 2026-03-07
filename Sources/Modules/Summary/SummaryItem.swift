@@ -1,10 +1,3 @@
-//
-//  SummaryItem.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/20.
-//
-
 import Foundation
 
 enum SummaryItem: Identifiable {

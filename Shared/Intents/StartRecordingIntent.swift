@@ -1,10 +1,3 @@
-//
-//  StartRecordingIntent.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/09/30.
-//
-
 import Foundation
 import AppIntents
 

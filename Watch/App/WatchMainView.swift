@@ -1,10 +1,3 @@
-//
-//  WatchMainView.swift
-//  ALogWatch
-//
-//  Created by Xin Du on 2023/08/05.
-//
-
 import SwiftUI
 
 struct WatchMainView: View {
@@ -17,8 +10,6 @@ struct WatchMainView: View {
     }
 }
 
-struct WatchMainView_Previews: PreviewProvider {
-    static var previews: some View {
-        WatchMainView()
-    }
+#Preview {
+    WatchMainView()
 }

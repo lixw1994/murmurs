@@ -1,20 +1,13 @@
-//
-//  TimelineEntryView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/12.
-//
-
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct TimelineEntryView: View {
-    @Environment(\.managedObjectContext) var moc
+    @Environment(\.modelContext) var modelContext
     @EnvironmentObject var player: AudioPlayer
-    @EnvironmentObject var vm: TimelineViewModel
-    
-    @ObservedObject var memo: MemoEntity
-    @EnvironmentObject var appState: AppState
+    @Environment(TimelineViewModel.self) var vm
+
+    var memo: MemoEntity
+    @Environment(AppState.self) var appState
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -41,9 +34,18 @@ struct TimelineEntryView: View {
         .contextMenu {
             if !vm.isMultiSelectMode {
                 if memo.viewContent.count > 0 { copyButton }
+                if Config.shared.isServerSet && !memo.viewContent.isEmpty { polishButton }
+                if memo.hasPolishedContent { deletePolishButton }
                 editButton
+                if Config.shared.isReadwiseSet && memo.needsSync { syncButton }
+                if Config.shared.isReadwiseSet && memo.readwiseId != nil { unsyncButton }
                 selectButton
                 deleteButton
+            }
+        }
+        .onTapGesture(count: 2) {
+            if !vm.isMultiSelectMode {
+                appState.activeSheet = .editMemo(memo)
             }
         }
         .onTapGesture {
@@ -59,6 +61,23 @@ struct TimelineEntryView: View {
             Text(memo.viewTime)
                 .font(.system(size: 12, weight: .bold))
                 .foregroundColor(.app_timeline_time)
+
+            if Config.shared.isReadwiseSet {
+                if vm.syncingMemos.contains(memo) {
+                    ProgressView()
+                        .scaleEffect(0.5)
+                        .frame(width: 12, height: 12)
+                } else if memo.syncedAt != nil && !memo.needsSync {
+                    Image(systemName: "checkmark.icloud")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                } else if memo.syncedAt != nil && memo.needsSync {
+                    Image(systemName: "arrow.clockwise.icloud")
+                        .font(.system(size: 10))
+                        .foregroundColor(.orange)
+                }
+            }
+
             Spacer()
         }
     }
@@ -68,16 +87,45 @@ struct TimelineEntryView: View {
         if vm.transcribingMemos.contains(memo) {
             Text(L(.transcribing))
                 .foregroundColor(.secondary)
+        } else if vm.polishingMemos.contains(memo) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(memo.viewContent)
+                    .foregroundColor(.app_timeline_text)
+                HStack(spacing: 4) {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                    Text(L(.polishing))
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
         } else {
             VStack(alignment: .leading, spacing: 10) {
                 if memo.isHidden {
                     Text(memo.viewContent)
                         .redacted(reason: .placeholder)
+                } else if memo.hasPolishedContent {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.caption2)
+                            .foregroundColor(.orange)
+                        Text(memo.viewPolishedContent)
+                            .foregroundColor(.app_timeline_text)
+                    }
+                    Text(memo.viewContent)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
                 } else {
                     Text(memo.viewContent)
                         .foregroundColor(.app_timeline_text)
                 }
                 if let err = vm.failedMemos[memo] {
+                    Text(err.localizedDescription)
+                        .font(.caption2)
+                        .foregroundColor(.red)
+                }
+                if let err = vm.polishFailedMemos[memo] {
                     Text(err.localizedDescription)
                         .font(.caption2)
                         .foregroundColor(.red)
@@ -91,14 +139,18 @@ struct TimelineEntryView: View {
         if vm.isMultiSelectMode {
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(isSelected ? .green : .secondary)
-        } else if vm.transcribingMemos.contains(memo) {
+        } else if vm.transcribingMemos.contains(memo) || vm.polishingMemos.contains(memo) {
             ProgressView()
         } else {
             Menu {
                 if memo.file != nil && Config.shared.transEnabled { transButton }
+                if Config.shared.isServerSet && !memo.viewContent.isEmpty { polishButton }
+                if memo.hasPolishedContent { deletePolishButton }
                 editButton
                 if memo.viewContent.count > 0 { shareButton }
                 if memo.file != nil { shareAudioButton }
+                if Config.shared.isReadwiseSet && memo.needsSync { syncButton }
+                if Config.shared.isReadwiseSet && memo.readwiseId != nil { unsyncButton }
                 showHideButton
                 deleteButton
             } label: {
@@ -195,6 +247,28 @@ struct TimelineEntryView: View {
         }
     }
     
+    private var polishButton: some View {
+        Button {
+            vm.polish(memo)
+        } label: {
+            Image(systemName: "sparkles")
+            if memo.hasPolishedContent {
+                Text(L(.repolish))
+            } else {
+                Text(L(.polish))
+            }
+        }
+    }
+
+    private var deletePolishButton: some View {
+        Button(role: .destructive) {
+            vm.deletePolish(memo)
+        } label: {
+            Image(systemName: "sparkles.slash")
+            Text(L(.delete_polish))
+        }
+    }
+
     private var transButton: some View {
         Button {
             vm.transcribe(memo)
@@ -208,6 +282,24 @@ struct TimelineEntryView: View {
         }
     }
     
+    private var syncButton: some View {
+        Button {
+            vm.syncToReadwise(memo)
+        } label: {
+            Image(systemName: "arrow.clockwise.icloud")
+            Text(L(.readwise_sync))
+        }
+    }
+
+    private var unsyncButton: some View {
+        Button(role: .destructive) {
+            vm.unsyncFromReadwise(memo)
+        } label: {
+            Image(systemName: "xmark.icloud")
+            Text(L(.readwise_unsync))
+        }
+    }
+
     private var showHideButton: some View {
         Button {
             vm.toggleVisibility(memo)
@@ -228,13 +320,11 @@ struct TimelineEntryView: View {
 }
 
 #if DEBUG
-struct TimelineEntryView_Previews: PreviewProvider {
-    static var previews: some View {
-        TimelineEntryView(memo: MemoEntity.preview())
-            .environment(\.managedObjectContext, DataContainer.shared.context)
-            .preferredColorScheme(.dark)
-            .environmentObject(AudioPlayer())
-            .environmentObject(TimelineViewModel())
-    }
+#Preview {
+    TimelineEntryView(memo: MemoEntity.preview(context: DataContainer.preview.context))
+        .modelContainer(DataContainer.preview.modelContainer)
+        .preferredColorScheme(.dark)
+        .environmentObject(AudioPlayer())
+        .environment(TimelineViewModel())
 }
 #endif

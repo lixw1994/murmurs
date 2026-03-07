@@ -13,18 +13,16 @@ platform :ios do
     })
 
     gym ({
-      scheme: 'ALog'
+      scheme: 'Murmurs'
     })
 
     upload_to_testflight(
-        apple_id: '6451082482',
-        itc_provider: 'ZTQ4TGAKFX',
         skip_submission: true,
         skip_waiting_for_build_processing: true
     )
   end
 
   lane :tests do
-    run_tests(scheme: "ALog", devices: ["iPhone 15 Pro"])
+    run_tests(scheme: "Murmurs", devices: ["iPhone 15 Pro"])
   end
 end

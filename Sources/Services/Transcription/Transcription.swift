@@ -1,10 +1,3 @@
-//
-//  Transcription.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/15.
-//
-
 import Foundation
 import XLog
 import Combine
@@ -18,7 +11,7 @@ enum TranscriptionError: LocalizedError {
     }
 }
 
-class Transcription {
+class Transcription: TranscriptionServiceProtocol {
     
     static let shared = Transcription()
     
@@ -32,15 +25,15 @@ class Transcription {
         if Config.shared.transProvider == .apple {
             return 1
         }
-        return Config.shared.serverType == .app ? 2 : 4
+        return 4
     }
-    
+
     /// 延迟
     var delay: UInt64 {
         if Config.shared.transProvider == .apple {
             return 1
         }
-        return Config.shared.serverType == .app ? 1 : 0
+        return 0
     }
     
     let hallucinationList: Set<String> = [
@@ -59,7 +52,7 @@ class Transcription {
             let text = try await SpeechRecognizer.shared.transcribe(voiceURL, lang: lang)
             return text
         } else if provider == .openai {
-            if Config.shared.serverType == .custom && !Config.shared.isServerSet {
+            if !Config.shared.isServerSet {
                 throw TranscriptionError.invalidCustomServer
             }
             

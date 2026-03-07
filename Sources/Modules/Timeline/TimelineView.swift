@@ -1,37 +1,39 @@
-//
-//  TimelineView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/10.
-//
-
 import SwiftUI
+import SwiftData
 import StoreKit
 
 struct TimelineView: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var container: DataContainer
+    @Environment(AppState.self) var appState
+    @Environment(DataContainer.self) var container
     @EnvironmentObject var config: Config
-    @Environment(\.managedObjectContext) var moc
+    @Environment(\.modelContext) var modelContext
     @Environment(\.requestReview) var requestReview
-    @SectionedFetchRequest(fetchRequest: MemoEntity.all, sectionIdentifier: \.day) var days
+    @Query(sort: [SortDescriptor(\MemoEntity.day, order: .reverse),
+                  SortDescriptor(\MemoEntity.createdAt, order: .reverse)]) var allMemos: [MemoEntity]
     @StateObject private var player = AudioPlayer.shared
-    @StateObject private var vm = TimelineViewModel()
-    
+    @State private var vm = TimelineViewModel()
+
+    var sections: [(day: Int32, memos: [MemoEntity])] {
+        Dictionary(grouping: allMemos, by: \.day)
+            .sorted { $0.key > $1.key }
+            .map { ($0.key, $0.value) }
+    }
+
     var body: some View {
+        @Bindable var vm = vm
         NavigationStack {
             ZStack {
-                if days.isEmpty {
+                if allMemos.isEmpty {
                     MyEmptyView(text: L(.timeline_empty))
                 } else {
                     timelineList
                         .environmentObject(player)
-                        .environmentObject(vm)
+                        .environment(vm)
                 }
                 if vm.isHoldingToRecord {
                     Color.black.opacity(0.8)
                 }
-                
+
                 if !vm.isMultiSelectMode {
                     recordButton
                 }
@@ -51,33 +53,33 @@ struct TimelineView: View {
                 Alert(title: Text(L(.are_you_sure)),
                       message: vm.isMultiSelectMode ? Text(L(.multi_delete_alert, vm.selectedMemos.count)) : nil,
                       primaryButton: .destructive(Text(L(.delete))) {
-                        vm.deleteSelectedMemos(moc: moc)
+                        vm.deleteSelectedMemos(context: modelContext)
                       }, secondaryButton: .cancel() {
                       })
             }
-            .onChange(of: vm.showReviewDialog) { newValue in
+            .onChange(of: vm.showReviewDialog) { oldValue, newValue in
                 guard newValue else { return }
                 requestReview()
             }
         }
     }
-    
+
     private func stopPlayer() {
         player.stop()
     }
-    
+
     @ViewBuilder private var timelineList: some View {
         ScrollView {
             ScrollViewReader { scroll in
                 LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
-                    ForEach(days) { day in
+                    ForEach(sections, id: \.day) { section in
                         Section {
-                            ForEach(day) { item in
+                            ForEach(section.memos) { item in
                                 TimelineEntryView(memo: item)
                                     .padding(.horizontal, 16)
                             }
                         } header: {
-                            TimelineHeaderView(dayId: Int(day.id))
+                            TimelineHeaderView(dayId: Int(section.day))
                         }
                     }
                     Spacer()
@@ -86,12 +88,12 @@ struct TimelineView: View {
             }
         }
     }
-    
+
     @ViewBuilder private var recordButton: some View {
         VStack {
             Spacer()
-            
-            if days.isEmpty && !vm.isHoldingToRecord {
+
+            if allMemos.isEmpty && !vm.isHoldingToRecord {
                 VStack(spacing: 15) {
                     Group {
                         Text(config.holdToRecordEnabled ? L(.timeline_recbtn_hold_here) : L(.timeline_recbtn_tap_here))
@@ -102,7 +104,7 @@ struct TimelineView: View {
                 .foregroundColor(.secondary)
                 .padding(.bottom, 15)
             }
-            
+
             if !config.holdToRecordEnabled {
                 FeedbackButton(action: startRecording) {
                     Image(systemName: "mic.fill")
@@ -126,24 +128,24 @@ struct TimelineView: View {
         }
         .padding(.bottom, 20)
     }
-    
+
     private func startRecording() {
         appState.startRecording()
     }
-    
+
     private func beginHoldToRecord() {
         guard appState.canStartRecording() else { return }
         vm.beginHoldToRecord()
     }
-    
+
     private func endHoldToRecord() {
         vm.endHoldToRecord()
     }
-    
+
     private func cancelHoldToRecord() {
         vm.cancelHoldToRecord()
     }
-    
+
     // MARK: - Toolbar
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
@@ -166,7 +168,7 @@ struct TimelineView: View {
                 Image("nav_settings")
             }
         }
-        
+
         ToolbarItem(placement: .navigationBarTrailing) {
             Button {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -188,7 +190,7 @@ struct TimelineView: View {
                 Text(L(.cancel))
             }
         }
-        
+
         ToolbarItem(placement: .navigationBarTrailing) {
             Button {
                 vm.showDeleteAlert = true
@@ -202,11 +204,9 @@ struct TimelineView: View {
 }
 
 #if DEBUG
-struct MemoListView_Previews: PreviewProvider {
-    static var previews: some View {
-        TimelineView()
-            .environmentObject(AppState.shared)
-            .environmentObject(DataContainer.shared)
-    }
+#Preview {
+    TimelineView()
+        .environment(AppState.shared)
+        .environment(DataContainer.shared)
 }
 #endif

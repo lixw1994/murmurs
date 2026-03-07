@@ -1,18 +1,12 @@
-//
-//  MainView.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/10.
-//
-
 import SwiftUI
 
 struct MainView: View {
-    @EnvironmentObject var container: DataContainer
+    @Environment(DataContainer.self) var container
     @EnvironmentObject var config: Config
-    @EnvironmentObject var appState: AppState
-    
+    @Environment(AppState.self) var appState
+
     var body: some View {
+        @Bindable var appState = appState
         TabView(selection: $appState.activeTab) {
             TimelineView()
                 .tabItem {
@@ -46,17 +40,15 @@ struct MainView: View {
                 SummaryEditView(summary: summary)
             }
         }
-        .fullScreenCover(isPresented: $appState.showRecording) {
+        .sheet(isPresented: $appState.showRecording) {
             RecordingView()
         }
     }
 }
 
 #if DEBUG
-struct MainView_Previews: PreviewProvider {
-    static var previews: some View {
-        MainView()
-            .environmentObject(AppState.shared)
-    }
+#Preview {
+    MainView()
+        .environment(AppState.shared)
 }
 #endif

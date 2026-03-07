@@ -1,18 +1,14 @@
-//
-//  AppInfo.swift
-//  ALog
-//
-//  Created by Xin Du on 2023/07/10.
-//
-
 import Foundation
 
 struct AppInfo {
     static let appStoreURL: URL = {
-        let urlString = Bundle.main.infoDictionary?["AppStoreURL"] as! String
-        return URL(string: urlString)!
+        if let urlString = Bundle.main.infoDictionary?["AppStoreURL"] as? String,
+           let url = URL(string: urlString) {
+            return url
+        }
+        return URL(string: Constants.Legal.repo_url)!
     }()
-    
+
     static let reviewURL: URL = {
         return appStoreURL.appending(queryItems: [.init(name: "action", value: "write-review")])
     }()

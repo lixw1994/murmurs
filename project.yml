@@ -1,16 +1,16 @@
-name: ALog
+name: Murmurs
 options:
   useBaseInternationalization: false
   enableBaseInternationalization: false
   groupOrdering:
     - order: [Sources, Resources, Shared]
 settings:
-  MARKETING_VERSION: 0.3.3
+  MARKETING_VERSION: 0.3.5
   CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: true
-  CODE_SIGN_STYLE: Manual
+  CODE_SIGN_STYLE: Automatic
+  DEVELOPMENT_TEAM: TBPGXSQHVE
   CURRENT_PROJECT_VERSION: 1
   VERSIONING_SYSTEM: apple-generic
-  DEVELOPMENT_TEAM: ZTQ4TGAKFX
 packages:
   XLog:
     path: ./Packages/XLog
@@ -28,10 +28,6 @@ packages:
   CSV:
     url: https://github.com/yaslab/CSV.swift.git
     from: 2.4.3
-  ArkanaKeys:
-    path: ./ArkanaKeys/ArkanaKeys
-  ArkanaKeysInterfaces:
-    path: ./ArkanaKeys/ArkanaKeysInterfaces
   TPPDF:
     url: https://github.com/techprimate/TPPDF.git
     from: 2.4.1
@@ -40,23 +36,23 @@ configs:
   Snapshot: debug
   AppStore: release
 schemes:
-  ALog:
+  Murmurs:
     build:
       targets:
-        ALog: all
+        Murmurs: all
       config: Debug
     test:
       targets:
-        - name: ALogTests
+        - name: MurmursTests
     run:
       config: Debug
       commandLineArguments:
         "-com.apple.CoreData.ConcurrencyDebug 1": true
         "-com.apple.CoreData.SQLDebug 1": true
-  ALogWatch:
+  MurmursWatch:
     build:
       targets:
-        ALogWatch: all
+        MurmursWatch: all
       config: Debug
     run:
       config: Debug
@@ -69,14 +65,14 @@ schemes:
         - SnapshotTests
       config: Snapshot
 targets:
-  ALogWatch:
+  MurmursWatch:
     type: application
     platform: watchOS
-    deploymentTarget: "9.0"
+    deploymentTarget: "10.0"
     dependencies:
       - package: XLog
       - package: XLang
-      - target: ALogWatchWidget
+      - target: MurmursWatchWidget
     sources:
       - Watch
       - Shared
@@ -84,97 +80,74 @@ targets:
       path: Watch/Info.plist
       properties:
         CFBundleShortVersionString: $(MARKETING_VERSION)
-        WKCompanionAppBundleIdentifier: app.tarbo.memo
-        NSMicrophoneUsageDescription: "ALog requires access to your microphone."
+        WKCompanionAppBundleIdentifier: com.tangyue.murmurs
+        NSMicrophoneUsageDescription: "Murmurs requires access to your microphone."
         UIBackgroundModes: [audio]
     settings:
-      base: 
-        PRODUCT_BUNDLE_IDENTIFIER: app.tarbo.memo.watch
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tangyue.murmurs.watch
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: true
-      configs:
-        Debug:
-          PROVISIONING_PROFILE_SPECIFIER: match Development app.tarbo.memo.watch
-          CODE_SIGN_IDENTITY: iPhone Developer
-        AppStore:
-          PROVISIONING_PROFILE_SPECIFIER: match AppStore app.tarbo.memo.watch
-          CODE_SIGN_IDENTITY: iPhone Distribution
-  ALogWatchWidget:
+  MurmursWatchWidget:
     type: app-extension
     platform: watchOS
-    deploymentTarget: "9.0"
+    deploymentTarget: "10.0"
     sources:
       - WatchWidget
     info:
       path: WatchWidget/Info.plist
       properties:
-        CFBundleDisplayName: ALog
+        CFBundleDisplayName: Murmurs
         CFBundleShortVersionString: $(MARKETING_VERSION)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
     settings:
-      base: 
-        PRODUCT_BUNDLE_IDENTIFIER: app.tarbo.memo.watch.widget
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tangyue.murmurs.watch.widget
         GENERATE_INFOPLIST_FILE: true
-      configs:
-        Debug:
-          PROVISIONING_PROFILE_SPECIFIER: match Development app.tarbo.memo.watch.widget
-          CODE_SIGN_IDENTITY: iPhone Developer
-        AppStore:
-          PROVISIONING_PROFILE_SPECIFIER: match AppStore app.tarbo.memo.watch.widget
-          CODE_SIGN_IDENTITY: iPhone Distribution
-  ALogTests:
+  MurmursTests:
     type: bundle.unit-test
     platform: iOS
-    deploymentTarget: "16.0"
+    deploymentTarget: "17.0"
     path: Tests/Info.plist
     sources:
       - Tests
     dependencies:
-      - target: ALog
+      - target: Murmurs
     settings:
       base:
         TARGETED_DEVICE_FAMILY: 1
-        PRODUCT_BUNDLE_IDENTIFIER: app.tarbo.memo.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.tangyue.murmurs.tests
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
         SUPPORTS_MACCATALYST: NO
-  ALogWidget:
+  MurmursWidget:
     type: app-extension
     platform: iOS
-    deploymentTarget: "16.0"
+    deploymentTarget: "17.0"
     sources:
       - WatchWidget
     info:
       path: WatchWidget/Info.plist
       properties:
-        CFBundleDisplayName: ALog
+        CFBundleDisplayName: Murmurs
         CFBundleShortVersionString: $(MARKETING_VERSION)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
     settings:
-      base: 
-        PRODUCT_BUNDLE_IDENTIFIER: app.tarbo.memo.widget
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tangyue.murmurs.widget
         GENERATE_INFOPLIST_FILE: true
         SKIP_INSTALL: true
-      configs:
-        Debug:
-          PROVISIONING_PROFILE_SPECIFIER: match Development app.tarbo.memo.widget
-          CODE_SIGN_IDENTITY: iPhone Developer
-        AppStore:
-          PROVISIONING_PROFILE_SPECIFIER: match AppStore app.tarbo.memo.widget
-          CODE_SIGN_IDENTITY: iPhone Distribution
-  ALog:
+  Murmurs:
     type: application
     platform: iOS
-    deploymentTarget: "16.0"
+    deploymentTarget: "17.0"
     dependencies:
       - package: XLog
       - package: XLang
       - package: KeychainAccess
-      - package: ArkanaKeys
-      - package: ArkanaKeysInterfaces
       - package: ConfettiSwiftUI
       - package: CSV
       - package: TPPDF
@@ -182,8 +155,8 @@ targets:
         product: DSWaveformImage
       - package: DSWaveformImage
         product: DSWaveformImageViews
-      - target: ALogWatch
-      - target: ALogWidget
+      - target: MurmursWatch
+      - target: MurmursWidget
     sources:
       - Sources
       - Resources
@@ -191,46 +164,38 @@ targets:
     info:
       path: Resources/Info.plist
       properties:
-        NSHumanReadableCopyright: Copyright © 2024 Tarbo Tech, LLC
         CFBundleShortVersionString: $(MARKETING_VERSION)
-        AppStoreURL: https://apps.apple.com/us/app/alog/id6451082482
         GIT_HASH: "${GIT_HASH}"
         UILaunchStoryboardName: Launch Screen
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        UISupportedInterfaceOrientations~ipad: 
+        UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationPortraitUpsideDown
         ITSAppUsesNonExemptEncryption: false
         NSSpeechRecognitionUsageDescription: "Access to speech recognition functionality is required."
-        NSMicrophoneUsageDescription: "ALog requires access to your microphone so that you can record entries in your journal."
+        NSMicrophoneUsageDescription: "Murmurs requires access to your microphone so that you can record entries in your journal."
         UIBackgroundModes: [audio]
         CFBundleURLTypes:
           - CFBundleTypeRole: Editor
-            CFBundleURLName: app.tarbo.memo
-            CFBundleURLSchemes: 
-              - alog
+            CFBundleURLName: com.tangyue.murmurs
+            CFBundleURLSchemes:
+              - murmurs
     settings:
       base:
         TARGETED_DEVICE_FAMILY: 1,2
-        PRODUCT_BUNDLE_IDENTIFIER: app.tarbo.memo
+        PRODUCT_BUNDLE_IDENTIFIER: com.tangyue.murmurs
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
       configs:
-        Debug:
-          PROVISIONING_PROFILE_SPECIFIER: match Development app.tarbo.memo
-          CODE_SIGN_IDENTITY: iPhone Developer
-        AppStore:
-          PROVISIONING_PROFILE_SPECIFIER: match AppStore app.tarbo.memo
-          CODE_SIGN_IDENTITY: iPhone Distribution
         Snapshot:
           SWIFT_ACTIVE_COMPILATION_CONDITIONS: [DEBUG, SNAPSHOT]
   SnapshotTests:
     type: bundle.ui-testing
-    deploymentTarget: "16.0"
+    deploymentTarget: "17.0"
     platform: iOS
     sources: [SnapshotTests]
     dependencies:
-      - target: ALog
+      - target: Murmurs
     settings:
       INFOPLIST_FILE: Resources/Info.plist
