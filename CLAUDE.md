@@ -22,10 +22,42 @@ After generating, open `Murmurs.xcodeproj` in Xcode. The main scheme is `Murmurs
 Unit tests are in the `MurmursTests` target (scheme `Murmurs` → Test). Run from Xcode or:
 
 ```shell
-xcodebuild test -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
 Snapshot UI tests use the `SnapshotTests` scheme with the `Snapshot` build configuration.
+
+## Automated Verification
+
+Every code change MUST be verified before considering the step complete. Use the following commands as automated feedback loops.
+
+### Build Verification (required after every code change)
+
+```shell
+xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro' 2>&1 | tail -5
+```
+
+A successful build ends with `** BUILD SUCCEEDED **`. Any other result means the change is broken — fix before proceeding.
+
+### Test Verification (required after logic changes)
+
+```shell
+xcodebuild test -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro' 2>&1 | tail -20
+```
+
+### Localization Verification (after adding/changing strings)
+
+```shell
+rake l10n
+```
+
+### Verification Workflow
+
+1. **After every file edit** → run build verification
+2. **After logic/model changes** → run build + test verification
+3. **After adding localized strings** → run localization + build verification
+4. **If verification fails** → read the error, fix, re-verify. Do NOT move to the next step until the current step passes
+5. **Autonomous iteration**: each step is a cycle of `edit → verify → fix → re-verify` until green
 
 ### Localization
 
