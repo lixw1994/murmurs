@@ -91,6 +91,8 @@ public enum MyLocalizedKey: String {
   case hide = "hide"
   /**开始录音*/
   case start_recording = "start_recording"
+  /**开始录音 - 描述*/
+  case start_recording_description = "start_recording_description"
   /**按住录音*/
   case hold_to_record = "hold_to_record"
   /**打开 App 后自动录音*/
@@ -191,6 +193,12 @@ public enum MyLocalizedKey: String {
   case settings_sum_prompts_add = "settings_sum_prompts_add"
   /**设置 - 总结 - Edit prompt*/
   case settings_sum_prompts_edit = "settings_sum_prompts_edit"
+  /**设置 - 快捷操作*/
+  case settings_shortcuts = "settings_shortcuts"
+  /**设置 - 快捷操作引导*/
+  case settings_shortcuts_guide = "settings_shortcuts_guide"
+  /**设置 - 打开设置*/
+  case settings_shortcuts_open_settings = "settings_shortcuts_open_settings"
   /**设置 - 实验功能*/
   case settings_experimental_features = "settings_experimental_features"
   /**设置 - 自定义 whisper 提示词*/

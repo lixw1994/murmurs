@@ -36,8 +36,10 @@ struct SettingsView: View {
                     
                     sectionData
                     
+                    sectionShortcuts
+
                     sectionExperiments
-                    
+
                     sectionInfo
                 }
             }
@@ -272,6 +274,16 @@ struct SettingsView: View {
         }
     }
     
+    @ViewBuilder
+    private var sectionShortcuts: some View {
+        Section {
+        } header: {
+            Text(L(.settings_shortcuts))
+        } footer: {
+            Text(L(.settings_shortcuts_guide))
+        }
+    }
+
     @ViewBuilder
     private var sectionExperiments: some View {
         Section {

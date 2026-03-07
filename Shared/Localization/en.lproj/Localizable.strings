@@ -133,6 +133,9 @@
 /*开始录音*/
 "start_recording" = "Start Recording";
 
+/*开始录音 - 描述*/
+"start_recording_description" = "Start a voice memo recording in Murmurs";
+
 /*按住录音*/
 "hold_to_record" = "Hold to Record";
 
@@ -282,6 +285,15 @@
 
 /*设置 - 总结 - Edit prompt*/
 "settings_sum_prompts_edit" = "Edit Prompt";
+
+/*设置 - 快捷操作*/
+"settings_shortcuts" = "Shortcuts";
+
+/*设置 - 快捷操作引导*/
+"settings_shortcuts_guide" = "You can start recording with Action Button, Siri, or Shortcuts. Go to Settings → Action Button and select the Murmurs shortcut.";
+
+/*设置 - 打开设置*/
+"settings_shortcuts_open_settings" = "Open Settings";
 
 /*设置 - 实验功能*/
 "settings_experimental_features" = "Experimental Features";

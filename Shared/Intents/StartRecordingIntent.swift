@@ -3,6 +3,7 @@ import AppIntents
 
 struct StartRecordingIntent: AppIntent {
     static var title: LocalizedStringResource = LocalizedStringResource(stringLiteral: "start_recording")
+    static var description: IntentDescription = IntentDescription(LocalizedStringResource(stringLiteral: "start_recording_description"))
 
     @MainActor
     func perform() async throws -> some IntentResult {

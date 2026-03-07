@@ -133,6 +133,9 @@
 /*开始录音*/
 "start_recording" = "开始录音";
 
+/*开始录音 - 描述*/
+"start_recording_description" = "在 Murmurs 中开始语音笔记录音";
+
 /*按住录音*/
 "hold_to_record" = "按住录音";
 
@@ -282,6 +285,15 @@
 
 /*设置 - 总结 - Edit prompt*/
 "settings_sum_prompts_edit" = "编辑提示词";
+
+/*设置 - 快捷操作*/
+"settings_shortcuts" = "快捷操作";
+
+/*设置 - 快捷操作引导*/
+"settings_shortcuts_guide" = "你可以通过 Action Button、Siri 或快捷指令开始录音。前往设置 → Action Button，选择 Murmurs 快捷指令。";
+
+/*设置 - 打开设置*/
+"settings_shortcuts_open_settings" = "打开设置";
 
 /*设置 - 实验功能*/
 "settings_experimental_features" = "实验功能";
