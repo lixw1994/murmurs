@@ -1,3 +1,0 @@
-package_manager: spm
-global_secrets:
-  - HMAC_KEY
