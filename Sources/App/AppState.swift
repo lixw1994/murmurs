@@ -56,12 +56,11 @@ import Observation
             activeSheet = .micPermission
             return
         }
+        AudioRecorder.prewarmSession()
         activeSheet = nil
         activeTab = 0
         AudioPlayer.shared.stop()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            self.showRecording = true
-        }
+        showRecording = true
     }
     
     func startCreatingNote() {

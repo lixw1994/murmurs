@@ -36,6 +36,42 @@ class AudioRecorder: NSObject, ObservableObject, AudioRecorderProtocol {
         String(format: "%02d:%02d", recordedTime / 60, recordedTime % 60)
     }
 
+    // MARK: - Session Prewarming
+
+    private static var prewarmTask: Task<Void, Never>?
+    private static var sessionPrewarmed = false
+
+    /// Call early (e.g. when user taps record button) to start configuring
+    /// AVAudioSession in parallel with UI animations. The slow part is
+    /// Bluetooth route negotiation which can take 0-3 seconds.
+    static func prewarmSession() {
+        guard prewarmTask == nil else { return }
+        sessionPrewarmed = false
+        prewarmTask = Task.detached {
+            do {
+                let session = AVAudioSession.sharedInstance()
+                try session.setAllowHapticsAndSystemSoundsDuringRecording(true)
+                #if os(iOS)
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.duckOthers, .allowBluetooth])
+                #else
+                try session.setCategory(.playAndRecord, mode: .default, options: .duckOthers)
+                #endif
+                try session.setActive(true)
+                AudioRecorder.sessionPrewarmed = true
+                XLog.debug("Audio session prewarmed", source: "Audio")
+            } catch {
+                XLog.error("Prewarm failed: \(error)", source: "Audio")
+            }
+        }
+    }
+
+    /// Await completion of a previously started prewarm. Returns immediately
+    /// if no prewarm is in progress.
+    static func awaitPrewarm() async {
+        await prewarmTask?.value
+        prewarmTask = nil
+    }
+
     deinit {
         timer?.invalidate()
         NotificationCenter.default.removeObserver(self)
@@ -124,13 +160,16 @@ class AudioRecorder: NSObject, ObservableObject, AudioRecorderProtocol {
     private func requestPermissionAndStartRecording() {
         do {
             session = AVAudioSession.sharedInstance()
-            try session.setAllowHapticsAndSystemSoundsDuringRecording(true)
-            #if os(iOS)
-            try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.duckOthers, .allowBluetooth])
-            #else
-            try session.setCategory(.playAndRecord, mode: .default, options: .duckOthers)
-            #endif
-            try session.setActive(true)
+            if !AudioRecorder.sessionPrewarmed {
+                try session.setAllowHapticsAndSystemSoundsDuringRecording(true)
+                #if os(iOS)
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.duckOthers, .allowBluetooth])
+                #else
+                try session.setCategory(.playAndRecord, mode: .default, options: .duckOthers)
+                #endif
+                try session.setActive(true)
+            }
+            AudioRecorder.sessionPrewarmed = false
             session.requestRecordPermission() { [unowned self] allowed in
                 DispatchQueue.main.async {
                     #if os(iOS)

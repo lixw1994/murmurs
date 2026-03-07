@@ -69,6 +69,21 @@ rake l10n
 
 This runs `scripts/l10n` which outputs `Shared/Localization/LocalizedKeys.swift`. Use `L(.key)` to reference localized strings in code.
 
+### Deploy to Device
+
+To install a Debug build on a connected iPhone, find the device ID first, then build and install:
+
+```shell
+# Find connected device ID
+xcodebuild -showdestinations -scheme Murmurs -project Murmurs.xcodeproj 2>&1 | grep "platform:iOS,"
+
+# Build for device (replace DEVICE_ID with actual ID)
+xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -configuration Debug -destination 'id=DEVICE_ID' -derivedDataPath /tmp/murmurs-build 2>&1 | tail -5
+
+# Install to device
+xcrun devicectl device install app --device DEVICE_ID /tmp/murmurs-build/Build/Products/Debug-iphoneos/Murmurs.app
+```
+
 ### Fastlane
 
 Fastlane is configured for App Store deployment. Install with `bundle install`, run with `bundle exec fastlane`.

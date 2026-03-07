@@ -64,9 +64,8 @@ struct RecordingView: View {
         .interactiveDismissDisabled()
         .task {
             vm.configureRecorder(recorder)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                recorder.startRecording()
-            }
+            await AudioRecorder.awaitPrewarm()
+            recorder.startRecording()
         }
         .onChange(of: appState.micPermission) { oldValue, newValue in
             if newValue == .denied {
