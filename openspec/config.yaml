@@ -1,20 +1,34 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Project: Murmurs — iOS/watchOS voice journal app
+  Tech stack: Swift, SwiftUI, SwiftData, XcodeGen, SPM
+  Targets: iOS 17.0, watchOS 10.0
+  Architecture: MVVM with @Observable ViewModels, protocol-based service layer
+  Persistence: SwiftData (MemoEntity, SummaryEntity, PromptEntity, UsageEntity)
+  Services: OpenAI (chat + whisper), Apple Speech, IAP, Readwise, CSV/Markdown/PDF export
+  Localization: Localizable.csv → rake l10n → L(.key)
+  Secrets: Keychain via KeychainAccess, never UserDefaults
+  Build: xcodegen → Murmurs.xcodeproj, schemes: Murmurs, MurmursWatch, SnapshotTests
+  Configs: Debug, Snapshot (SNAPSHOT flag), AppStore
+  Dependencies (SPM): KeychainAccess, ConfettiSwiftUI, DSWaveformImage, CSV.swift, TPPDF, XLog, XLang
+  Verification: every code change must pass `xcodebuild build` before proceeding
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - Keep proposals concise — state the problem, the solution, and non-goals
+    - Include user-facing behavior description, not just technical details
+    - Always include a "Non-goals" section to bound scope
+  design:
+    - Reference existing protocols and patterns (MVVM, protocol-based services)
+    - Specify which files/modules are affected
+    - Prefer extending existing abstractions over creating new ones
+  tasks:
+    - Each task must be independently verifiable via build or test
+    - Include the verification command for each task
+    - Order tasks so earlier ones unblock later ones (model → service → viewmodel → view)
+    - Keep each task small enough to verify in one edit-build cycle
+  spec:
+    - Follow existing naming conventions in the codebase
+    - Define protocol interfaces before implementations
+    - Include testability considerations (mock-friendly design)
