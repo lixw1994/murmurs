@@ -13,7 +13,7 @@ import SwiftData
         let descriptor = FetchDescriptor<MemoEntity>()
         let initialCount = try container.context.fetch(descriptor).count
 
-        let vm = QuickMemoViewModel(context: container.context)
+        let vm = QuickMemoViewModel(context: container.context, notificationCenter: NotificationCenter())
         vm.content = "Test memo content"
         vm.save()
 
@@ -26,7 +26,7 @@ import SwiftData
         let descriptor = FetchDescriptor<MemoEntity>()
         let initialCount = try container.context.fetch(descriptor).count
 
-        let vm = QuickMemoViewModel(context: container.context)
+        let vm = QuickMemoViewModel(context: container.context, notificationCenter: NotificationCenter())
         vm.content = ""
         vm.save()
 

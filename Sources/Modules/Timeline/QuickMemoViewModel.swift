@@ -8,9 +8,12 @@ import Observation
     var content: String = ""
 
     private let context: ModelContext
+    private let notificationCenter: NotificationCenter
 
-    init(context: ModelContext = DataContainer.shared.context) {
+    init(context: ModelContext = DataContainer.shared.context,
+         notificationCenter: NotificationCenter = .default) {
         self.context = context
+        self.notificationCenter = notificationCenter
     }
 
     func save() {
@@ -18,7 +21,7 @@ import Observation
         context.insert(memo)
         do {
             try context.save()
-            NotificationCenter.default.post(name: .memoInserted, object: memo)
+            notificationCenter.post(name: .memoInserted, object: memo)
         } catch {
             XLog.error(error, source: "memo")
         }
