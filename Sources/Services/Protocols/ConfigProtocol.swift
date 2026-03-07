@@ -17,7 +17,7 @@ protocol ConfigProtocol: AnyObject {
     var isServerValid: Bool { get }
 
     var sumEnabled: Bool { get set }
-    var aiModel: OpenAIChatModel { get set }
+    var aiModel: ChatModel { get set }
 
     var autoSave: Bool { get set }
     var dayStartTime: Int { get set }

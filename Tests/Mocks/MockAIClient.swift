@@ -7,10 +7,10 @@ class MockAIClient: AIClientProtocol {
     var summarizeCalled = false
     var summarizeCallCount = 0
     var lastSummarizeMsg: String?
-    var lastSummarizeModel: OpenAIChatModel?
+    var lastSummarizeModel: ChatModel?
     var lastSummarizeTemperature: Double?
 
-    func summarize(_ msg: String, model: OpenAIChatModel, temperature: Double) async throws -> AsyncThrowingStream<String, Error> {
+    func summarize(_ msg: String, model: ChatModel, temperature: Double) async throws -> AsyncThrowingStream<String, Error> {
         summarizeCalled = true
         summarizeCallCount += 1
         lastSummarizeMsg = msg
@@ -29,9 +29,9 @@ class MockAIClient: AIClientProtocol {
     var polishError: Error?
     var polishCalled = false
     var lastPolishText: String?
-    var lastPolishModel: OpenAIChatModel?
+    var lastPolishModel: ChatModel?
 
-    func polish(_ text: String, model: OpenAIChatModel) async throws -> AsyncThrowingStream<String, Error> {
+    func polish(_ text: String, model: ChatModel) async throws -> AsyncThrowingStream<String, Error> {
         polishCalled = true
         lastPolishText = text
         lastPolishModel = model
@@ -54,7 +54,7 @@ class MockAIClient: AIClientProtocol {
     var lastVerifyHost: String?
     var lastVerifyKey: String?
 
-    func verify(_ host: String, key: String?, model: OpenAIChatModel) async throws {
+    func verify(_ host: String, key: String?, model: ChatModel) async throws {
         verifyCalled = true
         lastVerifyHost = host
         lastVerifyKey = key

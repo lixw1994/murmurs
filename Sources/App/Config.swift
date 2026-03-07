@@ -17,8 +17,34 @@ class Config: ObservableObject, ConfigProtocol {
     @AppStorage("trans_model") var transModel = TranscriptionModel.whisper_1
     
     @AppStorage("sum_enabled") var sumEnabled = false
-    
-    @AppStorage("openai_model") var aiModel = OpenAIChatModel.gpt_3_5
+
+    @AppStorage("chat_model") private var aiModelData: String = ""
+
+    var aiModel: ChatModel {
+        get {
+            if aiModelData.isEmpty {
+                // Migrate from legacy enum storage
+                if let legacyRaw = UserDefaults.standard.string(forKey: "openai_model"),
+                   let migrated = ChatModel.fromLegacy(legacyRaw) {
+                    aiModelData = (try? String(data: JSONEncoder().encode(migrated), encoding: .utf8)) ?? ""
+                    UserDefaults.standard.removeObject(forKey: "openai_model")
+                    return migrated
+                }
+                return .default
+            }
+            guard let data = aiModelData.data(using: .utf8),
+                  let model = try? JSONDecoder().decode(ChatModel.self, from: data) else {
+                return .default
+            }
+            return model
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue),
+               let json = String(data: data, encoding: .utf8) {
+                aiModelData = json
+            }
+        }
+    }
     
     @AppStorage("auto_save") var autoSave = true
     

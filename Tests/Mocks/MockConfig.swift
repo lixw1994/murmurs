@@ -13,7 +13,7 @@ final class MockConfig: ConfigProtocol {
     var isServerValid: Bool = false
 
     var sumEnabled: Bool = false
-    var aiModel: OpenAIChatModel = .gpt_3_5
+    var aiModel: ChatModel = .default
 
     var autoSave: Bool = true
     var dayStartTime: Int = 2

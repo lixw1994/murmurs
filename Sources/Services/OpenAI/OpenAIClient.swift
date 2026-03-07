@@ -83,7 +83,7 @@ class OpenAIClient: AIClientProtocol {
     // MARK: - Verification
     
     /// 验证 chat 接口
-    func verify(_ host: String, key: String?, model: OpenAIChatModel = .gpt_3_5) async throws {
+    func verify(_ host: String, key: String?, model: ChatModel = .default) async throws {
         guard let hostURL = URL(string: host) else {
             throw URLError(.badURL)
         }
@@ -96,9 +96,9 @@ class OpenAIClient: AIClientProtocol {
             request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
         }
         
-        XLog.debug("Request \(host) \(key == nil ? "" : "<KEY>") [\(model.name)] ", source: "Verify")
-      
-        let params: [String: Any] = ["model": model.name, "messages": [["role": "system", "content": "Hi"]]]
+        XLog.debug("Request \(host) \(key == nil ? "" : "<KEY>") [\(model.id)] ", source: "Verify")
+
+        let params: [String: Any] = ["model": model.id, "messages": [["role": "system", "content": "Hi"]]]
         request.httpBody = try JSONSerialization.data(withJSONObject: params)
         let _ = try await send(request, type: OpenAIResponse.Chat.self)
     }
@@ -150,12 +150,12 @@ class OpenAIClient: AIClientProtocol {
         - Output ONLY the polished text, nothing else — no greetings, no explanations, no commentary
         """
 
-    func polish(_ text: String, model: OpenAIChatModel) async throws -> AsyncThrowingStream<String, Error> {
+    func polish(_ text: String, model: ChatModel) async throws -> AsyncThrowingStream<String, Error> {
         let url = baseURL.appending(path: "v1/chat/completions")
         var request = buildRequest(url: url)
 
         let params: [String: Any] = [
-            "model": model.name,
+            "model": model.id,
             "stream": true,
             "temperature": 0.3,
             "messages": [
@@ -196,11 +196,11 @@ class OpenAIClient: AIClientProtocol {
         }
     }
 
-    func summarize(_ msg: String, model: OpenAIChatModel, temperature: Double = 0.4) async throws -> AsyncThrowingStream<String, Error> {
+    func summarize(_ msg: String, model: ChatModel, temperature: Double = 0.4) async throws -> AsyncThrowingStream<String, Error> {
         let url = baseURL.appending(path: "v1/chat/completions")
         var request = buildRequest(url: url)
         
-        let params: [String: Any] = ["model": model.name, "stream": true, "temperature": temperature, "messages": [["role": "system", "content": msg]]]
+        let params: [String: Any] = ["model": model.id, "stream": true, "temperature": temperature, "messages": [["role": "system", "content": msg]]]
         request.httpBody = try JSONSerialization.data(withJSONObject: params)
         
         let (data, response) = try await URLSession.shared.bytes(for: request)

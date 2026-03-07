@@ -8,6 +8,7 @@ struct SettingsView: View {
     
     @State private var showPremium = false
     @State private var showExport = false
+    @State private var customModelId = ""
     
     @State private var showTransWarning = false {
         didSet {
@@ -165,20 +166,51 @@ struct SettingsView: View {
         }
     }
     
+    private var isCustomModel: Bool {
+        !config.aiModel.isPreset
+    }
+
+    private var modelPickerTag: String {
+        if isCustomModel { return "__custom__" }
+        return config.aiModel.id
+    }
+
     @ViewBuilder
     private var sectionSummarization: some View {
         Section {
             MyToggle(isOn: $config.sumEnabled) {
                 Text(L(.enable))
             }
-            
+
             if config.sumEnabled {
-                Picker(selection: $config.aiModel) {
-                    ForEach(OpenAIChatModel.allCases, id: \.self) {
-                        Text($0.displayName)
+                Picker(selection: Binding<String>(
+                    get: { modelPickerTag },
+                    set: { newValue in
+                        if newValue == "__custom__" {
+                            customModelId = isCustomModel ? config.aiModel.id : ""
+                            config.aiModel = ChatModel(id: customModelId)
+                        } else {
+                            if let preset = ChatModel.presets.first(where: { $0.id == newValue }) {
+                                config.aiModel = preset
+                            }
+                        }
                     }
+                )) {
+                    ForEach(ChatModel.presets, id: \.id) { model in
+                        Text(model.displayName).tag(model.id)
+                    }
+                    Text("Custom").tag("__custom__")
                 } label: {
                     Text(L(.settings_sum_model))
+                }
+
+                if isCustomModel {
+                    TextField("Model ID", text: Binding<String>(
+                        get: { config.aiModel.id },
+                        set: { config.aiModel = ChatModel(id: $0) }
+                    ))
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
                 }
 
                 NavigationLink {

@@ -38,7 +38,7 @@ import Observation
     var summarizedResponse = ""
     var summaryError = ""
     var saved = false
-    var model: OpenAIChatModel = .gpt_4o_mini
+    var model: ChatModel = .default
 
     var validMemos = [MemoEntity]()
     var excludedMemos = Set<MemoEntity>() {
@@ -141,7 +141,7 @@ import Observation
         let server = config.serverHost
         model = config.aiModel
 
-        XLog.info("Summarize (prompt: \(selectedPrompt?.viewTitle ?? ""), server: \(server), temp: \(temperature), model: \(model.name))", source: "Summary")
+        XLog.info("Summarize (prompt: \(selectedPrompt?.viewTitle ?? ""), server: \(server), temp: \(temperature), model: \(model.id))", source: "Summary")
 
         cancellationTask = Task { @MainActor in
             isSummarizing = true

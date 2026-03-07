@@ -87,7 +87,7 @@ enum ServerVerificationStatus: Equatable {
             // 测试 gpt_4
             verificationItems[.gpt_4o] = .inProgress
             do {
-                try await aiClient.verify(host, key: keyToUse, model: .gpt_4o)
+                try await aiClient.verify(host, key: keyToUse, model: .default)
                 verificationItems[.gpt_4o] = .success
             } catch {
                 verificationItems[.gpt_4o] = .failure(ErrorHelper.desc(error))
