@@ -18,6 +18,7 @@ import XLog
     var updatedAt: Date?
     var readwiseId: String?
     var polishedContent: String?
+    var title: String?
 
     init(entityId: String = UUID().uuidString.lowercased(),
          content: String? = nil,
@@ -49,6 +50,14 @@ extension MemoEntity {
 
     var hasPolishedContent: Bool {
         polishedContent != nil && !polishedContent!.isEmpty
+    }
+
+    var viewTitle: String {
+        title ?? ""
+    }
+
+    var hasTitle: Bool {
+        title != nil && !title!.isEmpty
     }
 
     /// Returns polished content if available, otherwise original content

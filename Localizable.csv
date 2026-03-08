@@ -182,3 +182,7 @@ I will ask you to:
 "delete_polish","删除润色","Delete Polish",删除润色
 "polishing","正在润色","Polishing ...",正在润色 ...
 "polish_server_not_set","润色 - 服务器未配置","Please configure the AI server in Settings first.",请先在设置中配置 AI 服务器。
+"generate_title","生成标题","Generate Title",生成标题
+"regenerate_title","重新生成标题","Re-generate Title",重新生成标题
+"delete_title","删除标题","Delete Title",删除标题
+"generating_title","正在生成标题","Generating Title ...",正在生成标题 ...

@@ -44,6 +44,18 @@ class MockAIClient: AIClientProtocol {
         }
     }
 
+    var generateTitleResult: String = "Mock Title"
+    var generateTitleError: Error?
+    var generateTitleCalled = false
+    var lastGenerateTitleText: String?
+
+    func generateTitle(_ text: String, model: ChatModel) async throws -> String {
+        generateTitleCalled = true
+        lastGenerateTitleText = text
+        if let error = generateTitleError { throw error }
+        return generateTitleResult
+    }
+
     var transcribeResult: OpenAIResponse.Transcription = .init(text: "mock")
     func transcribe(_ fileURL: URL, lang: TranscriptionLang, model: String) async throws -> OpenAIResponse.Transcription {
         return transcribeResult

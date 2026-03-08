@@ -135,6 +135,34 @@ class OpenAIClient: AIClientProtocol {
         let _ = try decodeResponse(data: data, response: response, type: OpenAIResponse.Transcription.self)
     }
     
+    private static let titleSystemPrompt = """
+        You are a title generator. You receive text content and output ONLY a short title.
+
+        Rules:
+        - Generate a concise title that captures the main topic (max 15 characters)
+        - Respond in the same language as the input text
+        - Output ONLY the title, nothing else — no quotes, no punctuation at the end, no explanation
+        """
+
+    func generateTitle(_ text: String, model: ChatModel) async throws -> String {
+        let url = baseURL.appending(path: "v1/chat/completions")
+        var request = buildRequest(url: url)
+
+        let params: [String: Any] = [
+            "model": model.id,
+            "stream": false,
+            "temperature": 0.3,
+            "messages": [
+                ["role": "system", "content": OpenAIClient.titleSystemPrompt],
+                ["role": "user", "content": text]
+            ]
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: params)
+
+        let result = try await send(request, type: OpenAIResponse.Chat.self)
+        return result.choices.first?.message.content.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
+
     private static let polishSystemPrompt = """
         You are a text-polishing machine. You receive raw voice transcription text and output ONLY the polished version.
 

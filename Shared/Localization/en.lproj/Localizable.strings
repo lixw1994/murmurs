@@ -458,3 +458,15 @@ I will ask you to:
 
 /*润色 - 服务器未配置*/
 "polish_server_not_set" = "Please configure the AI server in Settings first.";
+
+/*生成标题*/
+"generate_title" = "Generate Title";
+
+/*重新生成标题*/
+"regenerate_title" = "Re-generate Title";
+
+/*删除标题*/
+"delete_title" = "Delete Title";
+
+/*正在生成标题*/
+"generating_title" = "Generating Title ...";

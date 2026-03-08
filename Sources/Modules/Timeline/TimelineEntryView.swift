@@ -8,6 +8,7 @@ struct TimelineEntryView: View {
 
     var memo: MemoEntity
     @Environment(AppState.self) var appState
+    @State private var expanded = false
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -36,6 +37,9 @@ struct TimelineEntryView: View {
                 if memo.viewContent.count > 0 { copyButton }
                 if Config.shared.isServerSet && !memo.viewContent.isEmpty { polishButton }
                 if memo.hasPolishedContent { deletePolishButton }
+                if Config.shared.isServerSet && !memo.viewContent.isEmpty && !memo.hasTitle { generateTitleButton }
+                if Config.shared.isServerSet && !memo.viewContent.isEmpty && memo.hasTitle { regenerateTitleButton }
+                if memo.hasTitle { deleteTitleButton }
                 editButton
                 if Config.shared.isReadwiseSet && memo.needsSync { syncButton }
                 if Config.shared.isReadwiseSet && memo.readwiseId != nil { unsyncButton }
@@ -82,6 +86,10 @@ struct TimelineEntryView: View {
         }
     }
     
+    private var contentLineLimit: Int? {
+        expanded ? nil : (memo.hasTitle ? 2 : 3)
+    }
+
     @ViewBuilder
     private func contentLabel() -> some View {
         if vm.transcribingMemos.contains(memo) {
@@ -100,25 +108,43 @@ struct TimelineEntryView: View {
                 }
             }
         } else {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 6) {
+                if memo.hasTitle {
+                    Text(memo.viewTitle)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.app_timeline_text)
+                }
+
+                if vm.titleGeneratingMemos.contains(memo) {
+                    HStack(spacing: 4) {
+                        ProgressView()
+                            .scaleEffect(0.6)
+                        Text(L(.generating_title))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
                 if memo.isHidden {
                     Text(memo.viewContent)
                         .redacted(reason: .placeholder)
                 } else if memo.hasPolishedContent {
-                    HStack(spacing: 4) {
+                    HStack(alignment: .top, spacing: 4) {
                         Image(systemName: "sparkles")
                             .font(.caption2)
                             .foregroundColor(.orange)
                         Text(memo.viewPolishedContent)
                             .foregroundColor(.app_timeline_text)
+                            .lineLimit(contentLineLimit)
                     }
                     Text(memo.viewContent)
                         .font(.caption)
                         .foregroundColor(.secondary)
-                        .lineLimit(2)
+                        .lineLimit(expanded ? nil : 2)
                 } else {
                     Text(memo.viewContent)
                         .foregroundColor(.app_timeline_text)
+                        .lineLimit(contentLineLimit)
                 }
                 if let err = vm.failedMemos[memo] {
                     Text(err.localizedDescription)
@@ -130,6 +156,19 @@ struct TimelineEntryView: View {
                         .font(.caption2)
                         .foregroundColor(.red)
                 }
+                if let err = vm.titleFailedMemos[memo] {
+                    Text(err.localizedDescription)
+                        .font(.caption2)
+                        .foregroundColor(.red)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if !vm.isMultiSelectMode {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        expanded.toggle()
+                    }
+                }
             }
         }
     }
@@ -139,13 +178,16 @@ struct TimelineEntryView: View {
         if vm.isMultiSelectMode {
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(isSelected ? .green : .secondary)
-        } else if vm.transcribingMemos.contains(memo) || vm.polishingMemos.contains(memo) {
+        } else if vm.transcribingMemos.contains(memo) || vm.polishingMemos.contains(memo) || vm.titleGeneratingMemos.contains(memo) {
             ProgressView()
         } else {
             Menu {
                 if memo.file != nil && Config.shared.transEnabled { transButton }
                 if Config.shared.isServerSet && !memo.viewContent.isEmpty { polishButton }
                 if memo.hasPolishedContent { deletePolishButton }
+                if Config.shared.isServerSet && !memo.viewContent.isEmpty && !memo.hasTitle { generateTitleButton }
+                if Config.shared.isServerSet && !memo.viewContent.isEmpty && memo.hasTitle { regenerateTitleButton }
+                if memo.hasTitle { deleteTitleButton }
                 editButton
                 if memo.viewContent.count > 0 { shareButton }
                 if memo.file != nil { shareAudioButton }
@@ -266,6 +308,33 @@ struct TimelineEntryView: View {
         } label: {
             Image(systemName: "sparkles.slash")
             Text(L(.delete_polish))
+        }
+    }
+
+    private var generateTitleButton: some View {
+        Button {
+            vm.generateTitle(memo)
+        } label: {
+            Image(systemName: "textformat")
+            Text(L(.generate_title))
+        }
+    }
+
+    private var regenerateTitleButton: some View {
+        Button {
+            vm.generateTitle(memo)
+        } label: {
+            Image(systemName: "textformat")
+            Text(L(.regenerate_title))
+        }
+    }
+
+    private var deleteTitleButton: some View {
+        Button(role: .destructive) {
+            vm.deleteTitle(memo)
+        } label: {
+            Image(systemName: "xmark")
+            Text(L(.delete_title))
         }
     }
 

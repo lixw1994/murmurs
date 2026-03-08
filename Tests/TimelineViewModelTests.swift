@@ -288,6 +288,178 @@ import SwiftData
         XCTAssertNil(memo.polishedContent)
     }
 
+    // MARK: - generateTitle()
+
+    func testGenerateTitle_WhenServerNotSet_RecordsError() {
+        mockConfig.isServerSet = false
+        let vm = makeVM()
+        let memo = makeMemo(content: "some text")
+
+        vm.generateTitle(memo)
+
+        XCTAssertNotNil(vm.titleFailedMemos[memo])
+        XCTAssertFalse(mockAIClient.generateTitleCalled)
+    }
+
+    func testGenerateTitle_WhenServerNotSet_Silent_NoError() {
+        mockConfig.isServerSet = false
+        let vm = makeVM()
+        let memo = makeMemo(content: "some text")
+
+        vm.generateTitle(memo, silent: true)
+
+        XCTAssertNil(vm.titleFailedMemos[memo])
+        XCTAssertFalse(mockAIClient.generateTitleCalled)
+    }
+
+    func testGenerateTitle_WhenContentEmpty_DoesNothing() {
+        mockConfig.isServerSet = true
+        let vm = makeVM()
+        let memo = makeMemo(content: "")
+
+        vm.generateTitle(memo)
+
+        XCTAssertFalse(mockAIClient.generateTitleCalled)
+    }
+
+    func testGenerateTitle_OnSuccess_SavesTitle() async throws {
+        mockConfig.isServerSet = true
+        mockAIClient.generateTitleResult = "My Title"
+        let vm = makeVM()
+        let memo = makeMemo(content: "some text about my day")
+
+        vm.generateTitle(memo)
+
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertTrue(mockAIClient.generateTitleCalled)
+        XCTAssertEqual(memo.title, "My Title")
+        XCTAssertFalse(vm.titleGeneratingMemos.contains(memo))
+    }
+
+    func testGenerateTitle_OnFailure_RecordsError() async throws {
+        mockConfig.isServerSet = true
+        mockAIClient.generateTitleError = URLError(.badServerResponse)
+        let vm = makeVM()
+        let memo = makeMemo(content: "some text")
+
+        vm.generateTitle(memo)
+
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertNotNil(vm.titleFailedMemos[memo])
+        XCTAssertNil(memo.title)
+        XCTAssertFalse(vm.titleGeneratingMemos.contains(memo))
+    }
+
+    func testGenerateTitle_OnFailure_Silent_NoErrorRecorded() async throws {
+        mockConfig.isServerSet = true
+        mockAIClient.generateTitleError = URLError(.badServerResponse)
+        let vm = makeVM()
+        let memo = makeMemo(content: "some text")
+
+        vm.generateTitle(memo, silent: true)
+
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertNil(vm.titleFailedMemos[memo])
+        XCTAssertNil(memo.title)
+    }
+
+    // MARK: - deleteTitle()
+
+    func testDeleteTitle_ClearsTitle() throws {
+        let vm = makeVM()
+        let memo = makeMemo(content: "some text")
+        memo.title = "Old Title"
+        try container.context.save()
+
+        vm.deleteTitle(memo)
+
+        XCTAssertNil(memo.title)
+    }
+
+    // MARK: - Auto title generation after transcribe
+
+    func testTranscribe_OnSuccess_TriggersAutoTitleWhenServerSet() async throws {
+        mockConfig.isServerSet = true
+        mockTranscription.transcribeMemoResult = .success("Transcribed text")
+        mockAIClient.generateTitleResult = "Auto Title"
+        let vm = makeVM()
+        let memo = makeMemo(file: "test.m4a", content: "")
+
+        vm.transcribe(memo)
+
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertTrue(mockAIClient.generateTitleCalled)
+        XCTAssertEqual(memo.title, "Auto Title")
+    }
+
+    func testTranscribe_OnSuccess_SkipsTitleWhenAlreadyHasTitle() {
+        mockConfig.isServerSet = true
+        mockTranscription.transcribeMemoResult = .success("Transcribed text")
+        let vm = makeVM()
+        let memo = makeMemo(file: "test.m4a", content: "")
+        memo.title = "Existing"
+
+        vm.transcribe(memo)
+
+        XCTAssertFalse(mockAIClient.generateTitleCalled)
+    }
+
+    func testTranscribe_OnSuccess_SkipsTitleWhenServerNotSet() {
+        mockConfig.isServerSet = false
+        mockTranscription.transcribeMemoResult = .success("Transcribed text")
+        let vm = makeVM()
+        let memo = makeMemo(file: "test.m4a", content: "")
+
+        vm.transcribe(memo)
+
+        XCTAssertFalse(mockAIClient.generateTitleCalled)
+    }
+
+    // MARK: - Auto title generation after polish
+
+    func testPolish_OnSuccess_TriggersAutoTitle() async throws {
+        mockConfig.isServerSet = true
+        mockAIClient.polishResult = ["Polished ", "text"]
+        mockAIClient.generateTitleResult = "Polish Title"
+        let vm = makeVM()
+        let memo = makeMemo(content: "raw text")
+
+        vm.polish(memo)
+
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertTrue(mockAIClient.generateTitleCalled)
+        XCTAssertEqual(memo.title, "Polish Title")
+    }
+
+    // MARK: - MemoEntity title properties
+
+    func testMemoEntity_HasTitle_WhenSet() {
+        let memo = makeMemo(content: "raw")
+        memo.title = "Title"
+
+        XCTAssertTrue(memo.hasTitle)
+        XCTAssertEqual(memo.viewTitle, "Title")
+    }
+
+    func testMemoEntity_HasTitle_FalseWhenNil() {
+        let memo = makeMemo(content: "raw")
+
+        XCTAssertFalse(memo.hasTitle)
+        XCTAssertEqual(memo.viewTitle, "")
+    }
+
+    func testMemoEntity_HasTitle_FalseWhenEmpty() {
+        let memo = makeMemo(content: "raw")
+        memo.title = ""
+
+        XCTAssertFalse(memo.hasTitle)
+    }
+
     // MARK: - MemoEntity polished properties
 
     func testMemoEntity_HasPolishedContent_WhenSet() {

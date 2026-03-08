@@ -17,9 +17,11 @@ import Observation
 
     var transcribingMemos = Set<MemoEntity>()
     var polishingMemos = Set<MemoEntity>()
+    var titleGeneratingMemos = Set<MemoEntity>()
     var syncingMemos = Set<MemoEntity>()
     var failedMemos = [MemoEntity: Error]()
     var polishFailedMemos = [MemoEntity: Error]()
+    var titleFailedMemos = [MemoEntity: Error]()
     var showReviewDialog = false
 
     var isHoldingToRecord = false
@@ -88,6 +90,9 @@ import Observation
                     try? self?.context.save()
                     self?.transCount += 1
                     self?.requestReview()
+                    if self?.config.isServerSet == true && memo.title == nil {
+                        self?.generateTitle(memo, silent: true)
+                    }
                     if self?.config.readwiseAutoSync == true {
                         self?.syncToReadwise(memo)
                     }
@@ -178,6 +183,9 @@ import Observation
                     memo.polishedContent = polished
                     memo.updatedAt = Date()
                     try? context.save()
+                    if self.config.isServerSet {
+                        self.generateTitle(memo, silent: true)
+                    }
                 }
             } catch {
                 polishFailedMemos[memo] = error
@@ -189,6 +197,47 @@ import Observation
 
     func deletePolish(_ memo: MemoEntity) {
         memo.polishedContent = nil
+        memo.updatedAt = Date()
+        do {
+            try context.save()
+        } catch {
+            XLog.error(error, source: "Timeline")
+        }
+    }
+
+    func generateTitle(_ memo: MemoEntity, silent: Bool = false) {
+        guard config.isServerSet else {
+            if !silent {
+                titleFailedMemos[memo] = OpenAIError.badResponse(L(.polish_server_not_set))
+            }
+            return
+        }
+        guard !memo.viewContent.isEmpty else { return }
+        guard !titleGeneratingMemos.contains(memo) else { return }
+
+        titleFailedMemos[memo] = nil
+        titleGeneratingMemos.insert(memo)
+
+        Task {
+            do {
+                let title = try await aiClient.generateTitle(memo.displayContent, model: config.aiModel)
+                if !title.isEmpty {
+                    memo.title = title
+                    memo.updatedAt = Date()
+                    try? context.save()
+                }
+            } catch {
+                if !silent {
+                    titleFailedMemos[memo] = error
+                }
+                XLog.error(error, source: "Timeline")
+            }
+            titleGeneratingMemos.remove(memo)
+        }
+    }
+
+    func deleteTitle(_ memo: MemoEntity) {
+        memo.title = nil
         memo.updatedAt = Date()
         do {
             try context.save()

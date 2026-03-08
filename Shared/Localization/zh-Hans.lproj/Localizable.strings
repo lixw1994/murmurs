@@ -458,3 +458,15 @@
 
 /*润色 - 服务器未配置*/
 "polish_server_not_set" = "请先在设置中配置 AI 服务器。";
+
+/*生成标题*/
+"generate_title" = "生成标题";
+
+/*重新生成标题*/
+"regenerate_title" = "重新生成标题";
+
+/*删除标题*/
+"delete_title" = "删除标题";
+
+/*正在生成标题*/
+"generating_title" = "正在生成标题 ...";

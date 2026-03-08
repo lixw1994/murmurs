@@ -305,4 +305,12 @@ public enum MyLocalizedKey: String {
   case polishing = "polishing"
   /**润色 - 服务器未配置*/
   case polish_server_not_set = "polish_server_not_set"
+  /**生成标题*/
+  case generate_title = "generate_title"
+  /**重新生成标题*/
+  case regenerate_title = "regenerate_title"
+  /**删除标题*/
+  case delete_title = "delete_title"
+  /**正在生成标题*/
+  case generating_title = "generating_title"
 }
