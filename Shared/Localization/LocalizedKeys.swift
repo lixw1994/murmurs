@@ -317,4 +317,12 @@ public enum MyLocalizedKey: String {
   case search_placeholder = "search_placeholder"
   /**搜索无结果*/
   case search_no_results = "search_no_results"
+  /**暂停*/
+  case pause = "pause"
+  /**继续*/
+  case resume = "resume"
+  /**继续录音*/
+  case continue_recording = "continue_recording"
+  /**合并音频中*/
+  case merging_audio = "merging_audio"
 }

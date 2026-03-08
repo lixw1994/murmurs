@@ -476,3 +476,15 @@ I will ask you to:
 
 /*搜索无结果*/
 "search_no_results" = "No results";
+
+/*暂停*/
+"pause" = "Pause";
+
+/*继续*/
+"resume" = "Resume";
+
+/*继续录音*/
+"continue_recording" = "Continue Recording";
+
+/*合并音频中*/
+"merging_audio" = "Merging audio...";

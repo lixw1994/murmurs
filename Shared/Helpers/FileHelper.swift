@@ -38,4 +38,49 @@ class FileHelper {
         let audioDirURL = URL.documentsDirectory.appendingPathComponent(AUDIO_FOLDER)
         return audioDirURL.appending(path: fileName)
     }
+
+    #if os(iOS)
+    static func mergeAudioFiles(original: URL, append: URL) async throws -> URL {
+        let composition = AVMutableComposition()
+        guard let track = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) else {
+            throw NSError(domain: "FileHelper", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create composition track"])
+        }
+
+        let originalAsset = AVURLAsset(url: original)
+        let appendAsset = AVURLAsset(url: append)
+
+        let originalDuration = try await originalAsset.load(.duration)
+        let appendDuration = try await appendAsset.load(.duration)
+
+        guard let originalTrack = try await originalAsset.loadTracks(withMediaType: .audio).first else {
+            throw NSError(domain: "FileHelper", code: 2, userInfo: [NSLocalizedDescriptionKey: "No audio track in original file"])
+        }
+        guard let appendTrack = try await appendAsset.loadTracks(withMediaType: .audio).first else {
+            throw NSError(domain: "FileHelper", code: 3, userInfo: [NSLocalizedDescriptionKey: "No audio track in append file"])
+        }
+
+        try track.insertTimeRange(CMTimeRange(start: .zero, duration: originalDuration), of: originalTrack, at: .zero)
+        try track.insertTimeRange(CMTimeRange(start: .zero, duration: appendDuration), of: appendTrack, at: originalDuration)
+
+        let outputURL = URL(filePath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString.lowercased() + ".m4a")
+
+        guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetAppleM4A) else {
+            throw NSError(domain: "FileHelper", code: 4, userInfo: [NSLocalizedDescriptionKey: "Failed to create export session"])
+        }
+        exportSession.outputURL = outputURL
+        exportSession.outputFileType = .m4a
+
+        await exportSession.export()
+
+        guard exportSession.status == .completed else {
+            throw exportSession.error ?? NSError(domain: "FileHelper", code: 5, userInfo: [NSLocalizedDescriptionKey: "Audio export failed"])
+        }
+
+        // Clean up the append temp file
+        try? FileManager.default.removeItem(at: append)
+
+        XLog.info("Merged audio files → \(outputURL.lastPathComponent)", source: "FileHelper")
+        return outputURL
+    }
+    #endif
 }

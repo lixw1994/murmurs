@@ -36,6 +36,8 @@ struct MainView: View {
                 MicPermissionView()
             case .editMemo(let memo):
                 MemoEditView(memo: memo)
+            case .appendRecording(let memo):
+                RecordingView(appendTo: memo)
             case .editSummary(let summary):
                 SummaryEditView(summary: summary)
             }

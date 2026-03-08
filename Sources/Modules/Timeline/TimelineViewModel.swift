@@ -18,6 +18,7 @@ import Observation
     var transcribingMemos = Set<MemoEntity>()
     var polishingMemos = Set<MemoEntity>()
     var titleGeneratingMemos = Set<MemoEntity>()
+    var mergingMemos = Set<MemoEntity>()
     var syncingMemos = Set<MemoEntity>()
     var failedMemos = [MemoEntity: Error]()
     var polishFailedMemos = [MemoEntity: Error]()
@@ -56,10 +57,19 @@ import Observation
         self.readwiseClient = readwiseClient
         self.aiClient = aiClient
         notificationCenter.addObserver(self, selector: #selector(handleMemoInserted), name: .memoInserted, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(handleMemoAppendRecording), name: .memoAppendRecording, object: nil)
     }
 
     deinit {
         notificationCenter.removeObserver(self)
+    }
+
+    @objc private func handleMemoAppendRecording(_ notification: Notification) {
+        guard let memo = notification.object as? MemoEntity,
+              let userInfo = notification.userInfo,
+              let voiceURL = userInfo["voiceURL"] as? URL else { return }
+        let transcribedText = userInfo["transcribedText"] as? String
+        appendRecording(to: memo, voiceURL: voiceURL, transcribedText: transcribedText)
     }
 
     @objc private func handleMemoInserted(_ notification: Notification) {
@@ -277,6 +287,41 @@ import Observation
             NotificationCenter.default.post(name: .memoInserted, object: memo)
         } catch {
             XLog.error(error, source: "recording")
+        }
+    }
+
+    func appendRecording(to memo: MemoEntity, voiceURL: URL, transcribedText: String?) {
+        mergingMemos.insert(memo)
+        Task {
+            defer { mergingMemos.remove(memo) }
+            do {
+                if let existingFile = memo.file {
+                    let originalURL = FileHelper.fullAudioURL(for: existingFile)
+                    let mergedURL = try await FileHelper.mergeAudioFiles(original: originalURL, append: voiceURL)
+                    // Replace original file with merged file
+                    try? FileManager.default.removeItem(at: originalURL)
+                    let finalURL = try FileHelper.moveAudioFile(mergedURL)
+                    memo.file = finalURL.lastPathComponent
+                    memo.duration = await FileHelper.getAudioDuration(finalURL)
+                } else {
+                    let movedURL = try FileHelper.moveAudioFile(voiceURL)
+                    memo.file = movedURL.lastPathComponent
+                    memo.duration = await FileHelper.getAudioDuration(movedURL)
+                }
+
+                if let text = transcribedText, !text.isEmpty {
+                    let existing = memo.content ?? ""
+                    memo.content = existing.isEmpty ? text : existing + "\n" + text
+                }
+
+                memo.polishedContent = nil
+                memo.title = nil
+                memo.updatedAt = Date()
+                try? context.save()
+                notificationCenter.post(name: .memoInserted, object: memo)
+            } catch {
+                XLog.error("Failed to append recording: \(error)", source: "Timeline")
+            }
         }
     }
 

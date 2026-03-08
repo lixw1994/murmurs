@@ -476,3 +476,15 @@
 
 /*搜索无结果*/
 "search_no_results" = "无结果";
+
+/*暂停*/
+"pause" = "暂停";
+
+/*继续*/
+"resume" = "继续";
+
+/*继续录音*/
+"continue_recording" = "继续录音";
+
+/*合并音频中*/
+"merging_audio" = "正在合并音频...";

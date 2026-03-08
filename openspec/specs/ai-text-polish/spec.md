@@ -13,6 +13,10 @@ The system SHALL allow users to polish memo transcription text using an OpenAI-c
 - **WHEN** user triggers "AI Polish" but no OpenAI-compatible server is configured
 - **THEN** the system SHALL display an error indicating the server must be configured in Settings
 
+#### Scenario: Content edited after polish invalidates polish
+- **WHEN** user appends a recording or edits the memo content after polishing
+- **THEN** the system SHALL clear `polishedContent` to nil, as the polish no longer reflects the current content
+
 ### Requirement: Dual display of polished and original text
 When a memo has polished content, the system SHALL display both the polished and original text, with polished text emphasized and original text de-emphasized.
 

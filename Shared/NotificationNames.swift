@@ -6,4 +6,5 @@ extension Notification.Name {
     static let recordingSentToIphone = Notification.Name("recording_sent_to_iphone")
     static let connectivityIsActive  = Notification.Name("connectivity_is_active")
     static let memoInserted          = Notification.Name("memo_inserted")
+    static let memoAppendRecording   = Notification.Name("memo_append_recording")
 }

@@ -7,6 +7,7 @@ struct RecordingView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject var recorder = AudioRecorder()
     @State var vm = RecordingViewModel()
+    var appendTo: MemoEntity?
 
     @State var configuration: Waveform.Configuration = .init(
         style: .striped(.init(color: .label.withAlphaComponent(0.5), width: 3, spacing: 3))
@@ -24,7 +25,7 @@ struct RecordingView: View {
 
                     Spacer()
 
-                    RecordingStatusView()
+                    RecordingStatusView(isPaused: recorder.isPaused)
 
                     recordedTimeLabel
                         .padding(.top, 20)
@@ -40,11 +41,31 @@ struct RecordingView: View {
                         .padding(.horizontal)
                         .padding(.bottom, 30)
 
-                    StopRecordingButton {
-                        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                        Task {
-                            liveTranscriptionResult = await vm.stopLiveTranscription()
-                            recorder.stopRecording()
+                    HStack(spacing: 30) {
+                        if recorder.canPause {
+                            Button {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                if recorder.isPaused {
+                                    recorder.resumeRecording()
+                                } else {
+                                    recorder.pauseRecording()
+                                }
+                            } label: {
+                                Image(systemName: recorder.isPaused ? "play.fill" : "pause.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.white)
+                                    .frame(width: 56, height: 56)
+                                    .background(Color(uiColor: .tertiaryLabel).opacity(0.6))
+                                    .clipShape(Circle())
+                            }
+                        }
+
+                        StopRecordingButton {
+                            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                            Task {
+                                liveTranscriptionResult = await vm.stopLiveTranscription()
+                                recorder.stopRecording()
+                            }
                         }
                     }
                     .padding(.bottom, 40)
@@ -52,9 +73,10 @@ struct RecordingView: View {
             } else if recorder.isCompleted {
                 RecordingCompletedView(
                     voiceURL: recorder.voiceFile!,
-                    preTranscribedText: liveTranscriptionResult
+                    preTranscribedText: liveTranscriptionResult,
+                    appendTo: appendTo
                 )
-                .opacity(Config.shared.autoSave && liveTranscriptionResult == nil ? 0 : 1)
+                .opacity(Config.shared.autoSave && liveTranscriptionResult == nil && appendTo == nil ? 0 : 1)
             } else {
                 ProgressView()
             }

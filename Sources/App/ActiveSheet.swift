@@ -7,6 +7,7 @@ enum ActiveSheet: Identifiable, Equatable {
     case summarize(SummaryItem)
     case micPermission
     case editMemo(MemoEntity)
+    case appendRecording(MemoEntity)
     case editSummary(SummaryEntity)
     
     var id: String {
@@ -16,6 +17,7 @@ enum ActiveSheet: Identifiable, Equatable {
         case .summarize(let item): return item.id
         case .micPermission: return "mic"
         case .editMemo(let item): return "edit_memo_\(item.entityId)"
+        case .appendRecording(let item): return "append_recording_\(item.entityId)"
         case .editSummary(let item): return "edit_summary_\(item.entityId ?? "")"
         }
     }

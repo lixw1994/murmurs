@@ -41,6 +41,7 @@ struct TimelineEntryView: View {
                 if Config.shared.isServerSet && !memo.viewContent.isEmpty && memo.hasTitle { regenerateTitleButton }
                 if memo.hasTitle { deleteTitleButton }
                 editButton
+                continueRecordingButton
                 if Config.shared.isReadwiseSet && memo.needsSync { syncButton }
                 if Config.shared.isReadwiseSet && memo.readwiseId != nil { unsyncButton }
                 selectButton
@@ -92,7 +93,14 @@ struct TimelineEntryView: View {
 
     @ViewBuilder
     private func contentLabel() -> some View {
-        if vm.transcribingMemos.contains(memo) {
+        if vm.mergingMemos.contains(memo) {
+            HStack(spacing: 4) {
+                ProgressView()
+                    .scaleEffect(0.6)
+                Text(L(.merging_audio))
+                    .foregroundColor(.secondary)
+            }
+        } else if vm.transcribingMemos.contains(memo) {
             Text(L(.transcribing))
                 .foregroundColor(.secondary)
         } else if vm.polishingMemos.contains(memo) {
@@ -178,7 +186,7 @@ struct TimelineEntryView: View {
         if vm.isMultiSelectMode {
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(isSelected ? .green : .secondary)
-        } else if vm.transcribingMemos.contains(memo) || vm.polishingMemos.contains(memo) || vm.titleGeneratingMemos.contains(memo) {
+        } else if vm.mergingMemos.contains(memo) || vm.transcribingMemos.contains(memo) || vm.polishingMemos.contains(memo) || vm.titleGeneratingMemos.contains(memo) {
             ProgressView()
         } else {
             Menu {
@@ -189,6 +197,7 @@ struct TimelineEntryView: View {
                 if Config.shared.isServerSet && !memo.viewContent.isEmpty && memo.hasTitle { regenerateTitleButton }
                 if memo.hasTitle { deleteTitleButton }
                 editButton
+                continueRecordingButton
                 if memo.viewContent.count > 0 { shareButton }
                 if memo.file != nil { shareAudioButton }
                 if Config.shared.isReadwiseSet && memo.needsSync { syncButton }
@@ -335,6 +344,16 @@ struct TimelineEntryView: View {
         } label: {
             Image(systemName: "xmark")
             Text(L(.delete_title))
+        }
+    }
+
+    private var continueRecordingButton: some View {
+        Button {
+            AudioRecorder.prewarmSession()
+            appState.activeSheet = .appendRecording(memo)
+        } label: {
+            Image(systemName: "mic.badge.plus")
+            Text(L(.continue_recording))
         }
     }
 

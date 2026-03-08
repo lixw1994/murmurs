@@ -9,8 +9,8 @@ struct RecordingCompletedView: View {
 
     @State private var showDeleteAlert = false
 
-    init(voiceURL: URL, preTranscribedText: String? = nil) {
-        self._vm = State(initialValue: RecordingCompletedViewModel(voicePath: voiceURL, preTranscribedText: preTranscribedText))
+    init(voiceURL: URL, preTranscribedText: String? = nil, appendTo: MemoEntity? = nil) {
+        self._vm = State(initialValue: RecordingCompletedViewModel(voicePath: voiceURL, preTranscribedText: preTranscribedText, appendTo: appendTo))
         self._player = StateObject(wrappedValue: AudioPlayer(voiceURL))
     }
     
@@ -72,7 +72,7 @@ struct RecordingCompletedView: View {
             dismiss()
         }
         .task {
-            if Config.shared.autoSave {
+            if Config.shared.autoSave && !vm.isAppendMode {
                 vm.save()
                 dismiss()
             } else {

@@ -4,6 +4,7 @@ import AVFoundation
 
 class AudioRecorder: NSObject, ObservableObject, AudioRecorderProtocol {
     @Published var isRecording = false
+    @Published var isPaused = false
     @Published var isCompleted = false
     @Published var recordedTime: Int = 0
     @Published var voiceFile: URL?
@@ -31,6 +32,14 @@ class AudioRecorder: NSObject, ObservableObject, AudioRecorderProtocol {
     private var engineCurrentLevel: Float = 0
     private var useEngineMode: Bool { onBufferCaptured != nil }
     #endif
+
+    var canPause: Bool {
+        #if os(iOS)
+        return !useEngineMode
+        #else
+        return true
+        #endif
+    }
 
     var formattedTime: String {
         String(format: "%02d:%02d", recordedTime / 60, recordedTime % 60)
@@ -96,6 +105,28 @@ class AudioRecorder: NSObject, ObservableObject, AudioRecorderProtocol {
         }
     }
 
+    func pauseRecording() {
+        #if os(iOS)
+        guard !useEngineMode else { return }
+        #endif
+        guard isRecording, !isPaused, let recorder else { return }
+        recorder.pause()
+        isPaused = true
+        stopMonitoring()
+        XLog.debug("Recording paused", source: "Audio")
+    }
+
+    func resumeRecording() {
+        #if os(iOS)
+        guard !useEngineMode else { return }
+        #endif
+        guard isRecording, isPaused, let recorder else { return }
+        recorder.record()
+        isPaused = false
+        startMonitoring()
+        XLog.debug("Recording resumed", source: "Audio")
+    }
+
     func startRecording() {
         guard isRecording == false else {
             return
@@ -119,6 +150,7 @@ class AudioRecorder: NSObject, ObservableObject, AudioRecorderProtocol {
             return
         }
 
+        isPaused = false
         recorder?.stop()
 
         try? AVAudioSession.sharedInstance().setCategory(.playback)
@@ -129,6 +161,7 @@ class AudioRecorder: NSObject, ObservableObject, AudioRecorderProtocol {
         XLog.debug("terminating recording", source: "Audio")
         guard isRecording else { return }
         self.isTerminating = true
+        self.isPaused = false
 
         #if os(iOS)
         if useEngineMode {
