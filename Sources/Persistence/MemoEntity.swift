@@ -65,6 +65,14 @@ extension MemoEntity {
         hasPolishedContent ? viewPolishedContent : viewContent
     }
 
+    func matchesSearch(_ query: String) -> Bool {
+        guard !isHidden else { return false }
+        if viewTitle.localizedStandardContains(query) { return true }
+        if viewContent.localizedStandardContains(query) { return true }
+        if viewPolishedContent.localizedStandardContains(query) { return true }
+        return false
+    }
+
     var viewCreatedAt: String {
         let formatter = DateFormatter()
         if !timezone.isEmpty { formatter.timeZone = TimeZone(identifier: timezone) }

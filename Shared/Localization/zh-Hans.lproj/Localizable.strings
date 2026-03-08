@@ -470,3 +470,9 @@
 
 /*正在生成标题*/
 "generating_title" = "正在生成标题 ...";
+
+/*搜索提示*/
+"search_placeholder" = "搜索备忘录...";
+
+/*搜索无结果*/
+"search_no_results" = "无结果";

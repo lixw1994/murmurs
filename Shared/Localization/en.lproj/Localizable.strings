@@ -470,3 +470,9 @@ I will ask you to:
 
 /*正在生成标题*/
 "generating_title" = "Generating Title ...";
+
+/*搜索提示*/
+"search_placeholder" = "Search memos...";
+
+/*搜索无结果*/
+"search_no_results" = "No results";

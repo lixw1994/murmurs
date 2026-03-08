@@ -460,6 +460,49 @@ import SwiftData
         XCTAssertFalse(memo.hasTitle)
     }
 
+    // MARK: - MemoEntity search matching
+
+    func testMatchesSearch_MatchesContent() {
+        let memo = makeMemo(content: "Hello World")
+
+        XCTAssertTrue(memo.matchesSearch("hello"))
+        XCTAssertTrue(memo.matchesSearch("WORLD"))
+    }
+
+    func testMatchesSearch_MatchesTitle() {
+        let memo = makeMemo(content: "body")
+        memo.title = "Meeting Notes"
+
+        XCTAssertTrue(memo.matchesSearch("meeting"))
+    }
+
+    func testMatchesSearch_MatchesPolishedContent() {
+        let memo = makeMemo(content: "raw")
+        memo.polishedContent = "Polished diary entry"
+
+        XCTAssertTrue(memo.matchesSearch("diary"))
+    }
+
+    func testMatchesSearch_ExcludesHiddenMemos() {
+        let memo = makeMemo(content: "Hello World")
+        memo.isHidden = true
+
+        XCTAssertFalse(memo.matchesSearch("hello"))
+    }
+
+    func testMatchesSearch_ReturnsFalseWhenNoMatch() {
+        let memo = makeMemo(content: "Hello World")
+
+        XCTAssertFalse(memo.matchesSearch("xyz"))
+    }
+
+    func testMatchesSearch_CaseInsensitive() {
+        let memo = makeMemo(content: "café latte")
+
+        XCTAssertTrue(memo.matchesSearch("CAFÉ"))
+        XCTAssertTrue(memo.matchesSearch("cafe"))
+    }
+
     // MARK: - MemoEntity polished properties
 
     func testMemoEntity_HasPolishedContent_WhenSet() {

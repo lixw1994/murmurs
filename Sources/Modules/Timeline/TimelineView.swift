@@ -14,9 +14,19 @@ struct TimelineView: View {
     @State private var vm = TimelineViewModel()
     @State private var showCalendar = false
     @State private var scrollProxy: ScrollViewProxy?
+    @State private var searchText = ""
 
     var daysWithMemos: Set<Int> {
         Set(allMemos.map { Int($0.day) })
+    }
+
+    private var isSearching: Bool {
+        !searchText.isEmpty
+    }
+
+    private var searchResults: [MemoEntity] {
+        guard isSearching else { return [] }
+        return allMemos.filter { $0.matchesSearch(searchText) }
     }
 
     var sections: [(day: Int32, memos: [MemoEntity])] {
@@ -31,6 +41,10 @@ struct TimelineView: View {
             ZStack {
                 if allMemos.isEmpty {
                     MyEmptyView(text: L(.timeline_empty))
+                } else if isSearching {
+                    searchResultsList
+                        .environmentObject(player)
+                        .environment(vm)
                 } else {
                     VStack(spacing: 0) {
                         if showCalendar {
@@ -50,10 +64,11 @@ struct TimelineView: View {
                     Color.black.opacity(0.8)
                 }
 
-                if !vm.isMultiSelectMode {
+                if !vm.isMultiSelectMode && !isSearching {
                     recordButton
                 }
             }
+            .modifier(SearchableModifier(text: $searchText, isEnabled: !allMemos.isEmpty))
             .background(Color.app_bg)
             .toolbar {
                 toolbarContent
@@ -103,6 +118,33 @@ struct TimelineView: View {
                         .frame(height: 90)
                 }
                 .onAppear { scrollProxy = scroll }
+            }
+        }
+    }
+
+    @ViewBuilder private var searchResultsList: some View {
+        if searchResults.isEmpty {
+            VStack {
+                Spacer()
+                Text(L(.search_no_results))
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+        } else {
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(searchResults) { item in
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(item.viewCreatedAt)
+                                .font(.system(size: 11))
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 4)
+                            TimelineEntryView(memo: item)
+                                .padding(.horizontal, 16)
+                        }
+                    }
+                }
             }
         }
     }
@@ -229,6 +271,19 @@ struct TimelineView: View {
             }
             .foregroundStyle(vm.selectedMemos.isEmpty ? Color.gray : Color.red)
             .disabled(vm.selectedMemos.isEmpty)
+        }
+    }
+}
+
+private struct SearchableModifier: ViewModifier {
+    @Binding var text: String
+    let isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.searchable(text: $text, prompt: L(.search_placeholder))
+        } else {
+            content
         }
     }
 }

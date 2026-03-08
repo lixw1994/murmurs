@@ -313,4 +313,8 @@ public enum MyLocalizedKey: String {
   case delete_title = "delete_title"
   /**正在生成标题*/
   case generating_title = "generating_title"
+  /**搜索提示*/
+  case search_placeholder = "search_placeholder"
+  /**搜索无结果*/
+  case search_no_results = "search_no_results"
 }
