@@ -12,6 +12,12 @@ struct TimelineView: View {
                   SortDescriptor(\MemoEntity.createdAt, order: .reverse)]) var allMemos: [MemoEntity]
     @StateObject private var player = AudioPlayer.shared
     @State private var vm = TimelineViewModel()
+    @State private var showCalendar = false
+    @State private var scrollProxy: ScrollViewProxy?
+
+    var daysWithMemos: Set<Int> {
+        Set(allMemos.map { Int($0.day) })
+    }
 
     var sections: [(day: Int32, memos: [MemoEntity])] {
         Dictionary(grouping: allMemos, by: \.day)
@@ -26,9 +32,19 @@ struct TimelineView: View {
                 if allMemos.isEmpty {
                     MyEmptyView(text: L(.timeline_empty))
                 } else {
-                    timelineList
-                        .environmentObject(player)
-                        .environment(vm)
+                    VStack(spacing: 0) {
+                        if showCalendar {
+                            CalendarView(daysWithMemos: daysWithMemos) { dayId in
+                                withAnimation {
+                                    scrollProxy?.scrollTo(dayId, anchor: .top)
+                                }
+                            }
+                            Divider()
+                        }
+                        timelineList
+                            .environmentObject(player)
+                            .environment(vm)
+                    }
                 }
                 if vm.isHoldingToRecord {
                     Color.black.opacity(0.8)
@@ -80,11 +96,13 @@ struct TimelineView: View {
                             }
                         } header: {
                             TimelineHeaderView(dayId: Int(section.day))
+                                .id(Int(section.day))
                         }
                     }
                     Spacer()
                         .frame(height: 90)
                 }
+                .onAppear { scrollProxy = scroll }
             }
         }
     }
@@ -170,12 +188,24 @@ struct TimelineView: View {
         }
 
         ToolbarItem(placement: .navigationBarTrailing) {
-            Button {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    appState.activeSheet = .quickMemo
+            HStack(spacing: 12) {
+                if !allMemos.isEmpty {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showCalendar.toggle()
+                        }
+                    } label: {
+                        Image(systemName: showCalendar ? "calendar.circle.fill" : "calendar")
+                    }
                 }
-            } label: {
-                Image("nav_quick_memo")
+
+                Button {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        appState.activeSheet = .quickMemo
+                    }
+                } label: {
+                    Image("nav_quick_memo")
+                }
             }
         }
     }
