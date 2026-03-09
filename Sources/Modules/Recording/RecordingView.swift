@@ -99,6 +99,24 @@ struct RecordingView: View {
             if newValue && vm.shouldUseLiveTranscription {
                 vm.startLiveTranscription()
             }
+            if newValue {
+                vm.startLiveActivity()
+            } else {
+                vm.endLiveActivity(dismissed: !recorder.isCompleted)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .togglePauseRecording)) { _ in
+            if recorder.isPaused {
+                recorder.resumeRecording()
+            } else {
+                recorder.pauseRecording()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .stopRecording)) { _ in
+            Task {
+                liveTranscriptionResult = await vm.stopLiveTranscription()
+                recorder.stopRecording()
+            }
         }
         .onChange(of: recorder.isCompleted) { oldValue, newValue in
             if newValue {

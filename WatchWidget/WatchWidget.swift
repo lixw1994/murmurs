@@ -55,8 +55,7 @@ struct WatchWidgetEntryView : View {
     }
 }
 
-@main
-struct WatchWidget: Widget {
+struct MurmursStaticWidget: Widget {
     let kind: String = "main"
 
     var body: some WidgetConfiguration {
@@ -75,15 +74,25 @@ struct WatchWidget: Widget {
     }
 }
 
+@main
+struct MurmursWidgets: WidgetBundle {
+    var body: some Widget {
+        MurmursStaticWidget()
+        #if os(iOS)
+        RecordingLiveActivity()
+        #endif
+    }
+}
+
 #if os(watchOS)
 #Preview(as: .accessoryCorner) {
-    WatchWidget()
+    MurmursStaticWidget()
 } timeline: {
     SimpleEntry(date: .now)
 }
 #else
 #Preview(as: .accessoryCircular) {
-    WatchWidget()
+    MurmursStaticWidget()
 } timeline: {
     SimpleEntry(date: .now)
 }

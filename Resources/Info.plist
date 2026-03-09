@@ -39,6 +39,8 @@
 	<string>Murmurs requires access to your microphone so that you can record entries in your journal.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Access to speech recognition functionality is required.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

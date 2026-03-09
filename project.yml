@@ -125,8 +125,12 @@ targets:
     type: app-extension
     platform: iOS
     deploymentTarget: "17.0"
+    dependencies:
+      - package: XLog
     sources:
       - WatchWidget
+      - Shared/LiveActivity
+      - path: Shared/NotificationNames.swift
     info:
       path: WatchWidget/Info.plist
       properties:
@@ -140,6 +144,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.tangyue.murmurs.widget
         GENERATE_INFOPLIST_FILE: true
         SKIP_INSTALL: true
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: TBPGXSQHVE
   Murmurs:
     type: application
     platform: iOS
@@ -176,6 +182,7 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSSpeechRecognitionUsageDescription: "Access to speech recognition functionality is required."
         NSMicrophoneUsageDescription: "Murmurs requires access to your microphone so that you can record entries in your journal."
+        NSSupportsLiveActivities: true
         UIBackgroundModes: [audio]
         CFBundleURLTypes:
           - CFBundleTypeRole: Editor
