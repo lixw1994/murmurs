@@ -1,4 +1,5 @@
 import SwiftUI
+import MarkdownUI
 
 struct SummaryEntryView: View {
     var summary: SummaryEntity
@@ -28,11 +29,12 @@ struct SummaryEntryView: View {
                 }
             }
             
-            Text(summary.truncatedContent(200))
-                .foregroundColor(.secondary)
+            Markdown(summary.truncatedContent(200))
+                .markdownTextStyle {
+                    ForegroundColor(.secondary)
+                }
                 .padding(.bottom, 10)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .multilineTextAlignment(.leading)
             
             Divider()
                 .background(Color(uiColor: .tertiarySystemBackground))

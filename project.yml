@@ -31,6 +31,9 @@ packages:
   TPPDF:
     url: https://github.com/techprimate/TPPDF.git
     from: 2.4.1
+  MarkdownUI:
+    url: https://github.com/gonzalezreal/swift-markdown-ui
+    from: 2.4.0
 configs:
   Debug: debug
   Snapshot: debug
@@ -161,6 +164,7 @@ targets:
         product: DSWaveformImage
       - package: DSWaveformImage
         product: DSWaveformImageViews
+      - package: MarkdownUI
       - target: MurmursWatch
       - target: MurmursWidget
     sources:

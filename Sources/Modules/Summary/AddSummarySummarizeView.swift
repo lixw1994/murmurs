@@ -1,4 +1,5 @@
 import SwiftUI
+import MarkdownUI
 
 struct AddSummarySummarizeView: View {
     @Environment(AddSummaryViewModel.self) var vm
@@ -10,8 +11,8 @@ struct AddSummarySummarizeView: View {
                     if vm.summaryError.count > 0 {
                         errorView
                     }
-                    Text(vm.summarizedResponse)
-                        .foregroundColor(vm.isSummarizing ? .secondary : .primary)
+                    Markdown(vm.summarizedResponse)
+                        .opacity(vm.isSummarizing ? 0.6 : 1.0)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 20)
                     Spacer()

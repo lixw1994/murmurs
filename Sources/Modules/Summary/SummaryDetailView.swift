@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import XLog
 import TPPDF
+import MarkdownUI
 
 struct SummaryDetailView: View {
     var summary: SummaryEntity
@@ -16,7 +17,7 @@ struct SummaryDetailView: View {
     var body: some View {
         ScrollView(.vertical) {
             VStack {
-                Text(summary.viewContent)
+                Markdown(summary.viewContent)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(20)
