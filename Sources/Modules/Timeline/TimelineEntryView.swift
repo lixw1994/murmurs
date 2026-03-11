@@ -16,10 +16,22 @@ struct TimelineEntryView: View {
                 timeLabel()
                 contentLabel()
                 if let file = memo.file {
-                    HStack {
-                        playButton(file)
+                    if memo.hasLocalAudio {
+                        HStack {
+                            playButton(file)
+                        }
+                        .padding(.top, 8)
+                    } else {
+                        HStack(spacing: 4) {
+                            Image(systemName: "icloud")
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                            Text(L(.audio_on_recording_device))
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.top, 8)
                     }
-                    .padding(.top, 8)
                 }
             }
             menu()

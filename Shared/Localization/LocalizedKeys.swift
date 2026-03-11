@@ -17,6 +17,8 @@ public enum MyLocalizedKey: String {
   case done = "done"
   /**Cancel*/
   case cancel = "cancel"
+  /**Confirm*/
+  case confirm = "confirm"
   /**Next*/
   case next = "next"
   /**Error*/
@@ -295,6 +297,22 @@ public enum MyLocalizedKey: String {
   case readwise_auto_sync = "readwise_auto_sync"
   /**从 Readwise 删除*/
   case readwise_unsync = "readwise_unsync"
+  /**iCloud 同步*/
+  case icloud_sync = "icloud_sync"
+  /**同步录音文件*/
+  case icloud_sync_audio = "icloud_sync_audio"
+  /**同步录音文件提醒*/
+  case icloud_sync_audio_warning = "icloud_sync_audio_warning"
+  /**未登录 iCloud*/
+  case icloud_sync_not_signed_in = "icloud_sync_not_signed_in"
+  /**正在同步*/
+  case icloud_sync_status_syncing = "icloud_sync_status_syncing"
+  /**上次同步*/
+  case icloud_sync_status_last_synced = "icloud_sync_status_last_synced"
+  /**同步出错*/
+  case icloud_sync_status_error = "icloud_sync_status_error"
+  /**录音在录制设备上*/
+  case audio_on_recording_device = "audio_on_recording_device"
   /**AI 润色*/
   case polish = "polish"
   /**重新润色*/

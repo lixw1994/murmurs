@@ -10,6 +10,7 @@
 "company","公司","Tangyue Tech, LLC","tangyue"
 "done","Done","Done",完成
 "cancel","Cancel","Cancel",取消
+"confirm","Confirm","Confirm",确认
 "next","Next","Next",下一步
 "error","Error","Error",错误
 "delete","Delete","Delete",删除
@@ -176,6 +177,15 @@ I will ask you to:
 "readwise_sync","同步到 Readwise","Sync to Readwise",同步到 Readwise
 "readwise_auto_sync","自动同步到 Readwise","Auto Sync",自动同步
 "readwise_unsync","从 Readwise 删除","Remove from Readwise",从 Readwise 删除
+# iCloud Sync #
+"icloud_sync","iCloud 同步","iCloud Sync",iCloud 同步
+"icloud_sync_audio","同步录音文件","Sync Audio Files",同步录音文件
+"icloud_sync_audio_warning","同步录音文件提醒","Audio files may use significant iCloud storage. Are you sure you want to enable this?",录音文件可能会占用大量 iCloud 存储空间，确定要开启吗？
+"icloud_sync_not_signed_in","未登录 iCloud","Please sign in to iCloud in your device Settings to enable sync.",请先在系统设置中登录 iCloud 以启用同步。
+"icloud_sync_status_syncing","正在同步","Syncing...",正在同步...
+"icloud_sync_status_last_synced","上次同步","Last synced",上次同步
+"icloud_sync_status_error","同步出错","Sync error",同步出错
+"audio_on_recording_device","录音在录制设备上","Audio on recording device",录音仅在录制设备上可用
 # AI Polish #
 "polish","AI 润色","AI Polish",AI 润色
 "repolish","重新润色","Re-polish",重新润色

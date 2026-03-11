@@ -2,13 +2,20 @@ import Foundation
 import SwiftData
 
 @Model final class PromptEntity {
+    @Attribute(originalName: "prompt_id") var entityId: String = UUID().uuidString.lowercased()
     var title: String = ""
     var content: String = ""
     var createdAt: Date?
     var desc: String?
     var temperature: Double = 0.0
 
-    init(title: String = "", content: String = "", createdAt: Date = Date(), desc: String? = nil, temperature: Double = 0.5) {
+    init(entityId: String = UUID().uuidString.lowercased(),
+         title: String = "",
+         content: String = "",
+         createdAt: Date = Date(),
+         desc: String? = nil,
+         temperature: Double = 0.5) {
+        self.entityId = entityId
         self.title = title
         self.content = content
         self.createdAt = createdAt

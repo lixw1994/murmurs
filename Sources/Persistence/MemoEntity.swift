@@ -19,6 +19,7 @@ import XLog
     var readwiseId: String?
     var polishedContent: String?
     var title: String?
+    @Attribute(.externalStorage) var audioData: Data?
 
     init(entityId: String = UUID().uuidString.lowercased(),
          content: String? = nil,
@@ -85,6 +86,11 @@ extension MemoEntity {
         if !timezone.isEmpty { formatter.timeZone = TimeZone(identifier: timezone) }
         formatter.dateFormat = "H:mm"
         return formatter.string(from: createdAt ?? Date())
+    }
+
+    var hasLocalAudio: Bool {
+        guard let file else { return false }
+        return FileManager.default.fileExists(atPath: FileHelper.fullAudioURL(for: file).path())
     }
 
     var needsTranscription: Bool {

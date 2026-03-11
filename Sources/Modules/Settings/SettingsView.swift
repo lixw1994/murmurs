@@ -245,6 +245,17 @@ struct SettingsView: View {
     @ViewBuilder
     private var sectionData: some View {
         Section {
+            NavigationLink(destination: ICloudSyncSettingsView()) {
+                HStack {
+                    Text(L(.icloud_sync))
+                    Spacer()
+                    if config.icloudSyncEnabled {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+
             NavigationLink(destination: ReadwiseSettingsView()) {
                 HStack {
                     Text("Readwise")

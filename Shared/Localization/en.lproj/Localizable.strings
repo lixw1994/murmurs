@@ -22,6 +22,9 @@
 /*Cancel*/
 "cancel" = "Cancel";
 
+/*Confirm*/
+"confirm" = "Confirm";
+
 /*Next*/
 "next" = "Next";
 
@@ -443,6 +446,30 @@ I will ask you to:
 
 /*从 Readwise 删除*/
 "readwise_unsync" = "Remove from Readwise";
+
+/*iCloud 同步*/
+"icloud_sync" = "iCloud Sync";
+
+/*同步录音文件*/
+"icloud_sync_audio" = "Sync Audio Files";
+
+/*同步录音文件提醒*/
+"icloud_sync_audio_warning" = "Audio files may use significant iCloud storage. Are you sure you want to enable this?";
+
+/*未登录 iCloud*/
+"icloud_sync_not_signed_in" = "Please sign in to iCloud in your device Settings to enable sync.";
+
+/*正在同步*/
+"icloud_sync_status_syncing" = "Syncing...";
+
+/*上次同步*/
+"icloud_sync_status_last_synced" = "Last synced";
+
+/*同步出错*/
+"icloud_sync_status_error" = "Sync error";
+
+/*录音在录制设备上*/
+"audio_on_recording_device" = "Audio on recording device";
 
 /*AI 润色*/
 "polish" = "AI Polish";

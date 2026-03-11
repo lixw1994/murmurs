@@ -66,6 +66,11 @@ class Config: ObservableObject, ConfigProtocol {
     /// Auto Record / Create Note On Startup
     @AppStorage("auto_start_on_startup") var autoStartOnStartup = ""
     
+    // MARK: - iCloud Sync
+
+    @AppStorage("icloud_sync_enabled") var icloudSyncEnabled = false
+    @AppStorage("icloud_sync_audio") var icloudSyncAudio = false
+
     // MARK: - Readwise
 
     @AppStorage("readwise_sync_enabled") var readwiseSyncEnabled = false

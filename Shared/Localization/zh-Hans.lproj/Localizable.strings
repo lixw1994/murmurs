@@ -22,6 +22,9 @@
 /*Cancel*/
 "cancel" = "取消";
 
+/*Confirm*/
+"confirm" = "确认";
+
 /*Next*/
 "next" = "下一步";
 
@@ -443,6 +446,30 @@
 
 /*从 Readwise 删除*/
 "readwise_unsync" = "从 Readwise 删除";
+
+/*iCloud 同步*/
+"icloud_sync" = "iCloud 同步";
+
+/*同步录音文件*/
+"icloud_sync_audio" = "同步录音文件";
+
+/*同步录音文件提醒*/
+"icloud_sync_audio_warning" = "录音文件可能会占用大量 iCloud 存储空间，确定要开启吗？";
+
+/*未登录 iCloud*/
+"icloud_sync_not_signed_in" = "请先在系统设置中登录 iCloud 以启用同步。";
+
+/*正在同步*/
+"icloud_sync_status_syncing" = "正在同步...";
+
+/*上次同步*/
+"icloud_sync_status_last_synced" = "上次同步";
+
+/*同步出错*/
+"icloud_sync_status_error" = "同步出错";
+
+/*录音在录制设备上*/
+"audio_on_recording_device" = "录音仅在录制设备上可用";
 
 /*AI 润色*/
 "polish" = "AI 润色";
