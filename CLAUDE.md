@@ -128,4 +128,4 @@ KeychainAccess, ConfettiSwiftUI, DSWaveformImage, CSV.swift, TPPDF — plus loca
 
 ### Deployment Targets
 
-- iOS 17.0, watchOS 10.0
+- iOS 18.0, watchOS 11.0

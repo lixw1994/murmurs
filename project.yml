@@ -71,7 +71,7 @@ targets:
   MurmursWatch:
     type: application
     platform: watchOS
-    deploymentTarget: "10.0"
+    deploymentTarget: "11.0"
     dependencies:
       - package: XLog
       - package: XLang
@@ -94,7 +94,7 @@ targets:
   MurmursWatchWidget:
     type: app-extension
     platform: watchOS
-    deploymentTarget: "10.0"
+    deploymentTarget: "11.0"
     sources:
       - WatchWidget
     info:
@@ -112,7 +112,7 @@ targets:
   MurmursTests:
     type: bundle.unit-test
     platform: iOS
-    deploymentTarget: "17.0"
+    deploymentTarget: "18.0"
     path: Tests/Info.plist
     sources:
       - Tests
@@ -127,7 +127,7 @@ targets:
   MurmursWidget:
     type: app-extension
     platform: iOS
-    deploymentTarget: "17.0"
+    deploymentTarget: "18.0"
     dependencies:
       - package: XLog
     sources:
@@ -152,7 +152,7 @@ targets:
   Murmurs:
     type: application
     platform: iOS
-    deploymentTarget: "17.0"
+    deploymentTarget: "18.0"
     dependencies:
       - package: XLog
       - package: XLang
@@ -203,7 +203,7 @@ targets:
           SWIFT_ACTIVE_COMPILATION_CONDITIONS: [DEBUG, SNAPSHOT]
   SnapshotTests:
     type: bundle.ui-testing
-    deploymentTarget: "17.0"
+    deploymentTarget: "18.0"
     platform: iOS
     sources: [SnapshotTests]
     dependencies:
