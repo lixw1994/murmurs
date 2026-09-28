@@ -31,7 +31,7 @@ Enable the `anonymous` (with `emailDomainName: "anonymous.murmurs.denkit.app"`) 
 
 `/api/v1` handlers obtain `auth.$context.internalAdapter` to create users and sessions, and use `auth.api.getSession({ headers })` (bearer plugin) to authenticate. Social sign-in can later reuse the same user table, and the `anonymous` plugin already supports linking an anonymous user to a real account.
 
-`getAuth(db, env)` now takes its secret and base URL from the Worker `env` instead of `process.env`, so the API and the tests pass bindings explicitly. `server-entry.ts` passes `env`.
+`getAuth(db, env)` now takes its secret and base URL from the Worker `env` instead of `process.env`, so the API and the tests pass bindings explicitly. `server-entry.ts` passes `env`. The `tanstackStartCookies` plugin is removed: its after-hook imports TanStack Start server internals, which breaks `auth.api.getSession` when it is called from the Hono API (and from tests). Nothing calls `auth.api` from TanStack Start server functions, and `/api/auth/*` returns cookies through `auth.handler` directly.
 
 *Alternative:* a custom users and sessions implementation without Better Auth. Rejected: it would have to be replaced or bridged when social sign-in returns, and Better Auth already provides session storage, expiry, and extension.
 
@@ -68,7 +68,8 @@ Xcode build tool plugins must be trusted. Command-line builds (CLAUDE.md, `opens
 ### D6. iOS account logic
 
 - `CredentialStore` protocol, backed by `KeychainCredentialStore` (KeychainAccess, service `com.tangyue.murmurs.account`). The token uses `synchronizable(false)` with `afterFirstUnlockThisDeviceOnly`; the recovery code uses `synchronizable(true)` with `afterFirstUnlock`.
-- `AccountAPI` protocol wraps the generated `Client`. It adds the bearer header through a `ClientMiddleware` that reads the token from the store, and maps responses to `AccountAPIError` (`.unauthorized`, `.invalidRecoveryCode`, `.rateLimited`, `.network`, `.server`).
+- `AccountAPI` protocol wraps the generated `Client` and maps responses to `AccountAPIError` (`.unauthorized`, `.invalidRecoveryCode`, `.rateLimited`, `.network`, `.server`). Authenticated methods take the token as a parameter. `MurmursAPI` provides `BearerTokenMiddleware` and `Client.murmurs(serverURL:token:)`; the package depends on `swift-http-types` explicitly, because the app target cannot import `HTTPTypes` transitively.
+- **Follow-up**: only recovery-code rotation and account deletion call the API with a token today, and both go through `AccountService`'s `authorized` helper, which recovers once on `unauthorized`. The P1 sync engine must use the same helper.
 - `AccountService` (`@Observable`, `@MainActor`) exposes `state` (`.none`, `.working`, `.ready(userId)`, `.needsRestore`) and `ensureAccount()`, `recoveryCode`, `rotateRecoveryCode()`, `restore(code:)`, `deleteAccount()`, and `refreshAfterUnauthorized()`. `ensureAccount()` is idempotent. It returns if a token exists, recovers if only a code exists, and otherwise creates an account. Network failures leave the state `.none` for a later retry.
 - **Trigger**: `MurmursApp` calls `ensureAccount()` when the scene becomes active. The call is skipped under `#if SNAPSHOT` and when `XCTestConfigurationFilePath` is set.
 - **Base URL**: Info.plist key `MurmursAPIBaseURL = $(MURMURS_API_BASE_URL)`, a build setting per configuration: Debug and Snapshot use staging, AppStore uses production.
