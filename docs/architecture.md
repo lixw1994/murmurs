@@ -2,13 +2,24 @@
 
 本文档说明 Murmurs **当前代码**的结构和运行方式，供开发者和 agent 修改代码前阅读。每当结构性改动落地，都要同步更新本文档。
 
-- **目标架构**（多端、Cloudflare 后端、同步）的决策记录在 [`adr/`](../adr/)（ADR-0001 至 ADR-0013）。
+- **目标架构**（多端、Cloudflare 后端、同步）的决策记录在 [`adr/`](../adr/)（ADR-0001 至 ADR-0014）。
 - **实施顺序**见 [roadmap.md](./roadmap.md)。
 - **功能规格**见 [`openspec/specs/`](../openspec/specs/)。
 
 ## 系统概览
 
-Murmurs 目前是一个**单机版** iOS 和 watchOS 语音日记应用。所有数据都存在设备本地；转写、润色、标题和总结由客户端直接调用 Apple Speech 或兼容 OpenAI 的 API 完成。
+仓库是一个 monorepo（[ADR-0013](../adr/0013-monorepo-in-existing-repository.md)）：
+
+| 目录 | 现状 |
+|---|---|
+| `apple/` | 已上线的**单机版** iOS 和 watchOS 应用。所有数据都存在设备本地；转写、润色、标题和总结由客户端直接调用 Apple Speech 或兼容 OpenAI 的 API 完成 |
+| `web/` | Cloudflare Worker **骨架**：占位的 Web 页面和 `/api/v1`（目前只有 `GET /health`），登录尚未开放，见 [Web 与 API](#web-与-apiweb) |
+| `contract/` | 由 API 代码生成的 OpenAPI 契约及其检查脚本，见 [API 契约](#api-契约contract) |
+| `l10n/` | Apple 和 Web 共用的文案源文件与生成器，见 [本地化](#本地化l10n) |
+
+下面几节先说明 Apple 应用（除特别说明外，路径都相对于 `apple/`），再说明 Web、契约和本地化。
+
+**Apple 应用概要：**
 
 | 项目 | 值 |
 |---|---|
@@ -58,6 +69,8 @@ flowchart TB
 
 ## 目录结构
 
+`apple/` 的内容：
+
 ```text
 Sources/                 iOS 主应用
 ├── App/                 入口、AppState、Config、Constants、MainView（Timeline 和 Summary 两个标签页）
@@ -77,8 +90,10 @@ Watch/                   watchOS 应用（独立的 SwiftData 存储）
 WatchWidget/             表盘复杂功能和 Live Activity 的 UI
 Packages/                本地 SPM 包：XLog（日志）、XLang（运行时切换语言）
 Tests/  SnapshotTests/   测试
-openspec/  adr/  docs/   规格、架构决策、文档
+fastlane/  Gemfile       发布与测试工具
 ```
+
+仓库根目录另有 `web/`、`contract/`、`l10n/`、`openspec/`、`adr/`、`docs/`，以及运行 `rake l10n` 的 `Rakefile`。
 
 ## 核心流程
 
@@ -232,9 +247,52 @@ erDiagram
 | Live Activity、灵动岛 | `MurmursWidget` 扩展里的 `RecordingLiveActivity` |
 | 表盘复杂功能 | `MurmursWatchWidget` 扩展里的 `MurmursStaticWidget` |
 
-## 本地化
+## Web 与 API（`web/`）
 
-`Localizable.csv`（列：key、comment、en、zh-Hans）是文案的唯一来源。运行 `rake l10n`（脚本在 `scripts/l10n`）会生成 `Shared/Localization/LocalizedKeys.swift` 和两种语言的 `.strings` 文件。代码里用 `L(.key)` 引用文案；`XLang` 支持在运行时切换语言。
+`web/` 基于 `react-tanstarter` 模板，是**一个** Cloudflare Worker（[ADR-0004](../adr/0004-single-worker-from-react-tanstarter.md)），同时提供 Web 页面和 API：
+
+```mermaid
+flowchart LR
+  Req["请求"] --> Entry["src/server-entry.ts<br/>注入 env、db、getAuth"]
+  Entry --> TSS["TanStack Start"]
+  TSS -->|"/"| UI["占位落地页（SSR）"]
+  TSS -->|"/api/auth/*"| Auth["Better Auth<br/>未启用任何登录方式"]
+  TSS -->|"/api/v1/*"| Hono["Hono 应用<br/>src/server/api"]
+  Hono --> Health["GET /health"]
+  Auth --> D1[("D1")]
+```
+
+| 部分 | 说明 |
+|---|---|
+| API | `src/server/api/app.ts` 用 `@hono/zod-openapi` 构建，挂在 `/api/v1`；`src/routes/api/v1/$.ts` 把所有方法转发给它。API 代码不依赖 TanStack Start，原生客户端只调用 `/api/v1` |
+| `GET /api/v1/health` | 返回 `{ status: "ok", version, environment }`，不需要登录 |
+| 错误格式 | `{ "error": { "code", "message", "details"? } }`：未知路径 404 `not_found`，请求不符合 schema 时 400 `invalid_request`（`details.issues` 里是 zod 的校验问题），未处理异常 500 `internal_error`，不返回内部信息 |
+| 登录 | Better Auth 已挂载在 `/api/auth/*`，但没有启用任何登录方式，也关闭了邮箱密码，所以注册和登录都会被拒绝。它在第一次访问时才创建，`/api/v1` 不依赖它的密钥 |
+| 数据库 | D1 + Drizzle。schema 在 `src/lib/db/schema/`，迁移文件在 `drizzle/`（第一个迁移创建 Better Auth 的表），通过 `wrangler d1 migrations apply` 应用 |
+| 环境 | `wrangler.toml` 顶层是本地开发（`ENVIRONMENT=development`），`[env.staging]` 和 `[env.production]` 各有独立的 Worker 名和 D1。staging 和 production 的 D1 id 与密钥要由账号所有者创建后填入 |
+| 页面与文案 | 只有一个落地页；主题和语言切换沿用模板。文案来自 `l10n/`，语言为 `en` 和 `zh-Hans` |
+| 测试 | Vitest 4 + `@cloudflare/vitest-pool-workers`，在 Workers 运行时里测试 `test/api-worker.ts`（只挂载 Hono 应用）以及休眠状态的 Better Auth |
+
+## API 契约（`contract/`）
+
+`contract/openapi.json`（OpenAPI 3.0.3）由 `pnpm --dir web contract:generate` 从 API 的 zod 路由定义生成，并提交进仓库（[ADR-0010](../adr/0010-openapi-contract-with-generated-clients.md)）。原生端构建时直接读取这个文件，不需要 Node 工具链。
+
+| 脚本 | 作用 |
+|---|---|
+| `contract/scripts/check-drift.sh` | 重新生成并比较，文件过期时失败，并提示重新生成的命令 |
+| `contract/scripts/check-breaking.sh` | 用 oasdiff 对比主分支上的契约，发现破坏性变更时失败（[ADR-0014](../adr/0014-api-v1-compatibility-policy.md)）；本机没有 oasdiff 时改用 Docker 镜像 |
+| `contract/scripts/check-generators.sh` | 用 `swift-openapi-generator`（`contract/consumers/swift` 这个 SwiftPM 包）和 Kotlin `openapi-generator`（Docker）实际生成一次代码 |
+
+错误码 `code` 在契约里是字符串而不是枚举，这样以后新增错误码时，生成的客户端不会因为遇到未知值而解码失败。
+
+## 本地化（`l10n/`）
+
+`l10n/Localizable.csv`（列：key、comment、platforms、en、zh-Hans）是 Apple 和 Web 文案的唯一来源。`platforms` 取 `apple`、`web` 或 `apple web`，Web 独有的 key 放在 `web.` 命名空间下。在仓库根目录运行 `rake l10n`（生成器是 `l10n/generate`，测试是 `l10n/test_generate.rb`）会生成：
+
+- `apple/Shared/Localization/LocalizedKeys.swift` 和两种语言的 `.strings`：Swift 里用 `L(.key)` 引用，`XLang` 支持运行时切换语言
+- `web/src/i18n/locales/en.json` 和 `zh-Hans.json`：按 `.` 嵌套；`%@`、`%d` 转成 i18next 的 `%{0}`、`%{1}`，所以 prompt 模板里的字面量 `{{date}}` 不会被当成插值
+
+分节注释行（如 `# Plist #`）不生成 key；缺翻译时生成器会报出来，并回退到英文。
 
 ## 构建与 CI
 
@@ -244,8 +302,12 @@ erDiagram
 | `Snapshot` | UI 快照测试（编译条件 `SNAPSHOT`） |
 | `AppStore` | 发布 |
 
-- **CI**：`.github/workflows/run-unit-tests.yml`，推送到 `release/*` 分支时触发，运行 Fastlane `tests` lane。
-- **Fastlane**：`beta`（match 签名 → gym 构建 → 上传 TestFlight）；`tests`（在 iPhone 15 Pro 模拟器上运行单元测试）。
+- **CI**：每个区域一个 workflow，在 PR 和推送到 `master` 时按改动路径触发：
+  - `apple.yml`：macOS 上在 `apple/` 里运行 xcodegen 和 Fastlane `tests`；推送到 `release/*` 时也会运行
+  - `web.yml`：pnpm check、test、build，外加契约的漂移检查和破坏性变更检查
+  - `contract.yml`：Swift 生成器检查（macOS）和 Kotlin 生成器检查（Ubuntu + Docker）
+  - `l10n.yml`：生成器测试，以及确认生成的文件是最新的
+- **Fastlane**（`apple/fastlane`）：`beta`（match 签名 → gym 构建 → 上传 TestFlight）；`tests`（在 iPhone 17 Pro 模拟器上运行单元测试）。
 - **SPM 依赖**：KeychainAccess、ConfettiSwiftUI、DSWaveformImage、CSV.swift、TPPDF、MarkdownUI，以及本地包 XLog、XLang。
 
 构建和验证命令见 [CLAUDE.md](../CLAUDE.md)。
@@ -262,4 +324,4 @@ erDiagram
 | `UsageEntity`、`Constants.Limit` | 改由服务端记录用量、检查配额 | [ADR-0012](../adr/0012-subscriptions-via-revenuecat.md) |
 | StoreKit 1 `IAPManager` | 由 RevenueCat 订阅取代 | [ADR-0012](../adr/0012-subscriptions-via-revenuecat.md) |
 | 客户端 Readwise | 移到服务端 | [ADR-0002](../adr/0002-thick-server-thin-clients.md) |
-| 仓库根目录下的 Swift 工程 | 移到 `apple/` | [ADR-0013](../adr/0013-monorepo-in-existing-repository.md) |
+| Better Auth（未启用登录方式） | 启用 Apple、Google、邮箱 OTP 和 bearer token | [ADR-0011](../adr/0011-authentication-apple-google-email-otp.md) |

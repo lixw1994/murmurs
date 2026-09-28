@@ -74,11 +74,11 @@ Dependencies/
 # For more information about the recommended setup visit:
 # https://docs.fastlane.tools/best-practices/source-control/#source-control
 
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
-fastlane/README.md
+apple/fastlane/report.xml
+apple/fastlane/Preview.html
+apple/fastlane/screenshots/**/*.png
+apple/fastlane/test_output
+apple/fastlane/README.md
 
 # Code Injection
 # After new code Injection tools there's a generated folder /iOSInjectionProject
@@ -92,19 +92,19 @@ iOSInjectionProject/
 
 # End of https://www.toptal.com/developers/gitignore/api/swift
 
-fastlane/metadata/review_information/
-fastlane/screenshots/**/*.html
+apple/fastlane/metadata/review_information/
+apple/fastlane/screenshots/**/*.html
 # Check in the Package.resolved
 # https://github.com/yonaskolb/XcodeGen/blob/master/Docs/Usage.md#swift-package
 # Taken from https://github.com/yonaskolb/XcodeGen/issues/743#issuecomment-1255426914
-*.xcodeproj/**
-!*.xcodeproj/project.xcworkspace
-*.xcodeproj/project.xcworkspace/*
-!*.xcodeproj/project.xcworkspace/xcshareddata
-*.xcodeproj/project.xcworkspace/xcshareddata/*
-!*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
-*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/*
-!*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+apple/*.xcodeproj/**
+!apple/*.xcodeproj/project.xcworkspace
+apple/*.xcodeproj/project.xcworkspace/*
+!apple/*.xcodeproj/project.xcworkspace/xcshareddata
+apple/*.xcodeproj/project.xcworkspace/xcshareddata/*
+!apple/*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+apple/*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/*
+!apple/*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 .paseo-agent-team/
 
 # macOS

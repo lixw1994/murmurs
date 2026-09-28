@@ -1,0 +1,23 @@
+name: Localization
+
+on:
+  pull_request:
+    paths: ["l10n/**", "Rakefile", ".github/workflows/l10n.yml"]
+  push:
+    branches: [master]
+    paths: ["l10n/**", "Rakefile", ".github/workflows/l10n.yml"]
+
+jobs:
+  generated-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - name: Generator tests
+        run: ruby l10n/test_generate.rb
+      - name: Generated files are up to date
+        run: |
+          rake l10n
+          git diff --exit-code -- apple/Shared/Localization web/src/i18n/locales

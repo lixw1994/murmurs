@@ -23,6 +23,6 @@ platform :ios do
   end
 
   lane :tests do
-    run_tests(scheme: "Murmurs", devices: ["iPhone 15 Pro"])
+    run_tests(scheme: "Murmurs", devices: ["iPhone 17 Pro"])
   end
 end

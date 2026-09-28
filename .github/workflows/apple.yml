@@ -1,0 +1,23 @@
+name: Apple
+
+on:
+  pull_request:
+    paths: ["apple/**", "l10n/**", ".github/workflows/apple.yml"]
+  push:
+    branches: [master, "release/*"]
+    paths: ["apple/**", "l10n/**", ".github/workflows/apple.yml"]
+
+jobs:
+  test:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: apple
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test
+        run: |
+          bundle install
+          brew install xcodegen
+          xcodegen
+          bundle exec fastlane tests

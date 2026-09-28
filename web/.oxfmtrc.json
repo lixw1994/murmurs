@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "tabWidth": 2,
+  "semi": true,
+  "printWidth": 90,
+  "singleQuote": false,
+  "endOfLine": "lf",
+  "trailingComma": "all",
+  "sortImports": {},
+  "sortTailwindcss": {
+    "stylesheet": "./src/styles.css",
+    "attributes": ["class", "className"],
+    "functions": ["clsx", "cn", "cva", "tw"]
+  },
+  "sortPackageJson": true,
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    "routeTree.gen.ts",
+    "worker-configuration.d.ts",
+    "src/i18n/locales/",
+    "public/legal/",
+    ".wrangler",
+    ".output",
+    ".vite",
+    "drizzle/",
+    "dist",
+    ".claude/",
+    "**/*.md"
+  ]
+}

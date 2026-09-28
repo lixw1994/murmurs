@@ -1,0 +1,26 @@
+{
+  "app_name": "Murmurs",
+  "dark_mode_dark": "Dark",
+  "dark_mode_light": "Light",
+  "try_again": "Try again",
+  "web": {
+    "errors": {
+      "go_back": "Go back",
+      "home": "Home",
+      "not_found": "The page you are looking for does not exist."
+    },
+    "landing": {
+      "description": "Record voice memos, transcribe them, and summarize your days with AI.",
+      "platforms": "Currently available on iPhone and Apple Watch.",
+      "tagline": "Your voice journal"
+    },
+    "language": {
+      "en": "English",
+      "toggle": "Toggle language",
+      "zh_hans": "简体中文"
+    },
+    "theme": {
+      "toggle": "Toggle theme"
+    }
+  }
+}

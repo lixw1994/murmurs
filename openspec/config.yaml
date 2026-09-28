@@ -7,22 +7,31 @@ context: |
   Market: outside mainland China. Sign-in: Apple, Google, email OTP. Payments: RevenueCat subscriptions.
 
   Sources of truth — read before designing:
-    - adr/ (in-force architecture decisions, ADR-0001..0013)
+    - adr/ (in-force architecture decisions, ADR-0001..0014)
     - openspec/specs/ (current capabilities)
     - docs/architecture.md (CURRENT system) · docs/roadmap.md (phases P0–P6)
 
   ## Current codebase (what exists today)
-  Standalone iOS 18.0 / watchOS 11.0 app at the repo root; all data is local.
-    - Swift, SwiftUI-first with UIKit bridges (ADR-0007), MVVM with @Observable ViewModels
-    - SwiftData: MemoEntity, SummaryEntity, PromptEntity, UsageEntity; Watch has RecordingEntity
-    - Sources/Services: OpenAIClient (chat + whisper, called directly from the client), Transcription
-      (Apple Speech / OpenAI), live transcription (SpeechAnalyzer on iOS 26+, SFSpeechRecognizer before),
-      StoreKit 1 IAPManager, Readwise, Exporter
-    - Shared/: AudioRecorder, WatchConnectivity, App Intents, Live Activity, localization
-    - Targets: Murmurs, MurmursWidget, MurmursWatch, MurmursWatchWidget, MurmursTests, SnapshotTests
-    - Build: xcodegen → Murmurs.xcodeproj; configs Debug, Snapshot (SNAPSHOT flag), AppStore
-    - SPM: KeychainAccess, ConfettiSwiftUI, DSWaveformImage, CSV.swift, TPPDF, MarkdownUI, XLog, XLang
-    - Localization: Localizable.csv → `rake l10n` → L(.key); secrets in Keychain, never UserDefaults
+  Monorepo (ADR-0013):
+    - apple/ — shipped iOS 18.0 / watchOS 11.0 app; all data local.
+        Swift, SwiftUI-first with UIKit bridges (ADR-0007), MVVM with @Observable ViewModels;
+        SwiftData: MemoEntity, SummaryEntity, PromptEntity, UsageEntity (Watch: RecordingEntity);
+        Sources/Services: OpenAIClient (called directly from the client), Transcription (Apple Speech /
+        OpenAI), live transcription (SpeechAnalyzer on iOS 26+, SFSpeechRecognizer before), StoreKit 1
+        IAPManager, Readwise, Exporter; Shared/: AudioRecorder, WatchConnectivity, App Intents, Live Activity;
+        targets Murmurs, MurmursWidget, MurmursWatch, MurmursWatchWidget, MurmursTests, SnapshotTests;
+        xcodegen → apple/Murmurs.xcodeproj; configs Debug, Snapshot (SNAPSHOT flag), AppStore;
+        SPM: KeychainAccess, ConfettiSwiftUI, DSWaveformImage, CSV.swift, TPPDF, MarkdownUI, XLog, XLang;
+        secrets in Keychain, never UserDefaults
+    - web/ — one Cloudflare Worker from react-tanstarter: TanStack Start placeholder web UI; Hono
+        OpenAPI app at /api/v1 (src/server/api, mounted by src/routes/api/v1/$.ts) with GET /health and the
+        { error: { code, message, details? } } envelope; Better Auth mounted with no providers (sign-in
+        disabled); D1 via Drizzle with committed migrations in web/drizzle; wrangler envs dev (top level),
+        staging, production; tests with Vitest 4 + @cloudflare/vitest-pool-workers
+    - contract/ — openapi.json (OpenAPI 3.0.3, committed) + check-drift / check-breaking (oasdiff) /
+        check-generators (swift-openapi-generator, Kotlin openapi-generator)
+    - l10n/ — Localizable.csv (key, comment, platforms, en, zh-Hans) → `rake l10n` → Apple L(.key) and
+        web i18next JSON (web keys under `web.`, placeholders %{n})
 
   ## Target architecture (being built per docs/roadmap.md)
     - Native client per platform (ADR-0001): apple/ (SwiftUI), android/ (Kotlin, Compose, Room,
@@ -38,18 +47,16 @@ context: |
     - Memo pipeline (ADR-0006): Cloudflare Workflows — per-segment transcribe → polish → title →
       write back to the DO → record usage
     - Offline-first native, online-first web (ADR-0009)
-    - Contract (ADR-0010): zod (@hono/zod-openapi) → contract/openapi.json → swift-openapi-generator,
-      openapi-generator (Kotlin), TS types; sync conformance fixtures in contract/sync-fixtures/
-    - Monorepo in this repo (ADR-0013): apple/ android/ web/ desktop/ contract/ l10n/ openspec/ docs/ adr/
-      — directories are created by the P0 change; until then Swift code stays at the repo root
+    - Contract (ADR-0010): generated clients in each app; /api/v1 is additive-only (ADR-0014)
 
   ## Verification commands by area
-    - Apple (today at the repo root; under apple/ after P0):
-        xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
-        xcodebuild test  -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
-    - Localization: rake l10n
-    - web/ (from P0): pnpm check (oxfmt + oxlint + tsc) and pnpm build; server tests to be set up in P0
-    - contract/ (from P0): regenerate openapi.json and fail on diff; run sync fixtures on server, Swift, Kotlin
+    - Apple (run xcodegen in apple/ first if project.yml or the layout changed):
+        cd apple && xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+        cd apple && xcodebuild test  -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+    - Web: pnpm --dir web check && pnpm --dir web test && pnpm --dir web build
+    - Contract: pnpm --dir web contract:generate; contract/scripts/check-drift.sh; contract/scripts/check-breaking.sh;
+        contract/scripts/check-generators.sh [swift|kotlin]
+    - Localization: rake l10n; ruby l10n/test_generate.rb
     - android/ (from P5): ./gradlew build test
     - Specs: openspec validate --all --strict (also enforced by the pre-commit hook)
 

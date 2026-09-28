@@ -1,0 +1,3 @@
+# Copy to .dev.vars for local development. Only /api/auth/* needs this secret.
+# Generate one with: pnpm auth:secret
+BETTER_AUTH_SECRET=replace-with-at-least-32-random-characters

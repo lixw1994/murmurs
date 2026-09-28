@@ -1,0 +1,205 @@
+"key","comment","platforms","en",zh-Hans
+# Plist #
+"@CFBundleDisplayName","应用名称","apple","Murmurs",Murmurs
+# General #
+"app_name","应用名称","apple web","Murmurs",Murmurs
+"review_app","评价","apple","Review Murmurs",评价 Murmurs
+"rate_on_the_app_store","评分","apple","Rate on the App Store",在 App Store 上评分
+"share_with_friends","分享给朋友","apple","Share with Friends",分享给朋友
+"about_app","关于","apple","About Murmurs",关于 Murmurs
+"company","公司","apple","Tangyue Tech, LLC",tangyue
+"done","Done","apple","Done",完成
+"cancel","Cancel","apple","Cancel",取消
+"next","Next","apple","Next",下一步
+"error","Error","apple","Error",错误
+"delete","Delete","apple","Delete",删除
+"edit","Edit","apple","Edit",编辑
+"select","Select","apple","Select",选择
+"ok","OK","apple","OK",好
+"enable","Enable 开关","apple","Enable",开启
+"copy","Copy","apple","Copy",复制
+"memo","Memo","apple","Memo",笔记
+"save","Save","apple","Save",保存
+"api_key","API Key","apple","API Key",API KEY
+"verify","Verify","apple","Verify",验证
+"version","Version","apple","Version",版本
+"about","关于","apple","About",关于
+"recording","Recording","apple","Recording",正在录音
+"are_you_sure","确认对话框","apple","Are you sure?",您确定吗？
+"multi_delete_alert","批量删除确认","apple","Are you sure you want to delete %d selected items?",确定要删除选中的 %d 条笔记吗？
+"share","分享","apple","Share",分享
+"share_audio","分享音频","apple","Share audio",分享录音
+"preview","预览","apple","Preview",预览
+"optional","可选","apple","Optional",可选
+"summarize","总结","apple","Summarize",总结
+"resummarize","重新总结","apple","Resummarize",重新总结
+"transcribe","转写","apple","Transcribe",转写
+"retranscribe","重新转写","apple","Re-transcribe",重新转写
+"export","导出","apple","Export",导出
+"try_again","Try Again","apple web","Try again",重试
+"privacy_policy","Privacy Policy","apple","Privacy Policy",隐私权政策
+"terms_of_use","Terms of Use","apple","Terms of Use",使用条款
+"source_code","Source Code","apple","Source Code",源代码
+"not_now","Not Now","apple","Not now",以后再说
+"unlimited","Unlimited","apple","Unlimited",无限
+"characters","Characters","apple","Characters",字数
+"_default","Default","apple","Default",默认
+"show","Show","apple","Show",显示
+"hide","Hide","apple","Hide",隐藏
+"start_recording","开始录音","apple","Start Recording",开始录音
+"start_recording_description","开始录音 - 描述","apple","Start a voice memo recording in Murmurs",在 Murmurs 中开始语音笔记录音
+"hold_to_record","按住录音","apple","Hold to Record",按住录音
+"auto_record_on_startup","打开 App 后自动录音","apple","Auto Record on Startup",打开 App 后自动录音
+"auto_create_note_on_startup","打开 App 后自动新建笔记","apple","Auto Create Note on Startup",打开 App 后自动新建笔记
+"time","Time（日记创建时间）","apple","Time",时间
+# Error #
+"error_invalid_custom_server","无效自定义服务器","apple","Invalid custom server",无效自定义服务器
+# Dark Mode #
+"dark_mode_auto","外观 - 自动","apple","System Default",跟随系统
+"dark_mode_light","外观 - 浅色","apple web","Light",浅色
+"dark_mode_dark","外观 - 深色","apple web","Dark",深色
+# Server #
+"server_default","服务器 - 默认","apple","Default",默认
+"server_custom","服务器 - 自定义","apple","Custom",自定义
+# Premium #
+"premium","Premium","apple","Premium",高级版
+"premium_one_time_upgrade","一次性付费升级","apple","A one-time upgrade",一次性付费升级
+"premium_thanks","感谢升级","apple","Thank you for upgrading to Murmurs Premium.",感谢您升级到 Murmurs 高级版
+"premium_restore_purchase","恢复购买","apple","Restore Purchase",恢复购买
+"premium_summary_num","总结数量","apple","Summaries",总结数量
+"premium_prompt_num","提示词数量","apple","Prompts",提示词数量
+"premium_custom_server","自定义服务器","apple","Custom server",自定义服务器
+"premium_export_data","导出数据","apple","Export to CSV, Markdown",导出数据为 CSV，Markdown
+"premium_daily_character_limit","每日字符上限","apple","Daily character limit",每日字符上限
+"premium_go_premium","购买按钮 - 展示价格","apple","Go Premium: %@",升级到高级版：%@
+"premium_upgrade_to_premium","升级到高级版","apple","Upgrade to Premium",升级到高级版
+# Permission #
+"permission_mic_title","申请权限 - 标题","apple","Allow Murmurs to access your microphone?",允许 Murmurs 访问你的麦克风吗？
+"permission_mic_msg","申请权限 - 正文","apple","You can update your choice at any time in Settings.",您可以随时在系统设置中更改你的选择。
+"permission_mic_denied_msg","申请权限 - 正文 (denied)","apple","Murmurs will not work without access to the microphone.",没有麦克风访问权限，Murmurs 将无法正常工作。
+"permission_not_now","申请权限 - 以后再说","apple","Not now",以后再说
+"permission_allow","申请权限 - 允许","apple","Allow",允许
+"permission_open_settings","申请权限 - 打开设置","apple","Open Settings",打开设置
+# Settings #
+"settings_title","设置标题","apple","Settings",设置
+"settings_general","设置 - 通用","apple","General",通用
+"settings_day_starts_at","设置 - 新一天开始时间","apple","Start of Day",一天开始时间
+"settings_app_language","设置 - 应用语言","apple","App Language",应用语言
+"settings_app_appearance","设置 - 外观","apple","Appearance",外观
+"settings_auto_save","设置 - 录音结束自动保存","apple","Auto-Save after Recording",录音后自动保存
+"settings_server","设置 - 服务器","apple","Server",服务器
+"settings_server_desc","设置 - 服务器 - footer","apple","The default server uses GPT-4o mini for summarization and Whisper-1 or GPT-4o mini for transcription. Custom servers allow the use of different models.",默认服务器使用 GPT-4o mini 总结笔记，Whisper-1 或者 GPT-4o mini 转写语音。自定义服务器可选择其他模型。
+"settings_server_settings","设置 - 自定义服务器设置","apple","Server Settings",服务器设置
+"settings_server_host","设置 - 自定义服务器 - 主机","apple","Host",主机
+"settings_server_requires_key","设置 - 自定义服务器 - 需要 API KEY","apple","Requires API Key",需要 API Key
+"settings_server_verify_item_chat","设置 - 自定义服务器 - 验证 chat api","apple","Summarization",日记总结
+"settings_server_verify_item_whisper","设置 - 自定义服务器 - 验证 whisper","apple","Whisper Transcription",Whisper 语音转写
+"settings_trans","设置 - 转写","apple","Transcription",语音转写
+"settings_trans_lang","设置 - 转写 - 语言","apple","Main Language",转写语言
+"settings_trans_provider","设置 - 转写 - 服务","apple","Service",服务
+"settings_trans_privacy_warning","设置 - 转写 - 隐私警告","apple","As the transcription services require internet connection, please don't record any sensitive information.",由于语音转写服务需要互联网连接，请不要录入敏感信息
+"settings_sum","设置 - 总结","apple","Summarization",总结
+"settings_sum_provider","设置 - 总结 - 服务","apple","Service",服务
+"settings_sum_ai_model","设置 - 总结 - AI 模型","apple","AI Model",AI 模型
+"settings_sum_prompts","设置 - 总结 - 提示词","apple","Prompts",提示词
+"settings_sum_prompts_add","设置 - 总结 - add prompt","apple","Add Prompt",添加提示词
+"settings_sum_prompts_edit","设置 - 总结 - Edit prompt","apple","Edit Prompt",编辑提示词
+"settings_shortcuts","设置 - 快捷操作","apple","Shortcuts",快捷操作
+"settings_shortcuts_guide","设置 - 快捷操作引导","apple","You can start recording with Action Button, Siri, or Shortcuts. Go to Settings → Action Button and select the Murmurs shortcut.",你可以通过 Action Button、Siri 或快捷指令开始录音。前往设置 → Action Button，选择 Murmurs 快捷指令。
+"settings_shortcuts_open_settings","设置 - 打开设置","apple","Open Settings",打开设置
+"settings_experimental_features","设置 - 实验功能","apple","Experimental Features",实验功能
+# Experimental Features
+"settings_custom_whisper_prompt_enabled","设置 - 自定义 whisper 提示词","apple","Custom Whisper Prompt",自定义 Whisper 提示词
+"settings_custom_whisper_desc","设置 - 自定义 whisper 提示词 - 描述","apple","Whisper only considers the first 244 tokens of the prompt.",Whisper 只处理提示词的前 244 个 token。
+# Export #
+"export_data","导出数据","apple","Export Data",导出数据
+"export_category","导出数据 - 类别","apple","Category",类别
+"export_category_note","导出数据 - 类别 - 笔记","apple","Note",笔记
+"export_category_summary","导出数据 - 类别 - 总结","apple","Summary",总结
+"export_format","导出数据 - 格式","apple","Format",格式
+# Timeline #
+"timeline","Timeline","apple","Timeline",时间线
+"timeline_empty","Timeline - ""no entries""","apple","No Entries",无记录
+"timeline_recbtn_tap_here","Timeline - 录音按钮 - ""tap here""","apple","Tap here to get started",点击此处开始
+"timeline_recbtn_hold_here","Timeline - 录音按钮 - ""hold here""","apple","Hold here to get started",按住此处开始
+# Summary #
+"summary","Summary","apple","Summary",总结
+"summary_empty","Summary - ""no summaries""","apple","No Summaries",无记录
+# 转写 #
+"trans_provider_apple","转写 - Apple","apple","System",系统
+"trans_provider_openai","转写 - OpenAI (Whisper) ","apple","OpenAI",OpenAI
+"trans_provider_apple_notice","转写 - Apple - 提示","apple","Less accurate and limited to 1 minute audio duration.",准确度较低且仅限于1分钟的音频时长。
+"transcribing","转写 - 正在转写 ","apple","Transcribing ...",正在转写 ...
+# 转写语言 #
+"trans_lang_auto","转写 - 语言 - 自动检测","apple","Auto-Detect",自动检测
+"trans_lang_en","英语","apple","English",英文
+"trans_lang_ja","日语","apple","Japanese",日语
+"trans_lang_zh_hans","简体中文","apple","Chinese",简体中文
+"trans_lang_zh_hant_hk","粤语","apple","Cantonese",粤语
+# 总结 #
+"sum_title","总结 - 标题","apple","Title",标题
+"sum_title_default","总结 - 默认标题","apple","%@",%@
+"sum_no_prompts","总结 - 没有提示词","apple","You haven't added any Prompts",你还没有添加提示词
+"sum_choose_prompt","总结 - 选择提示词","apple","Choose a prompt",选择一个提示词
+"sum_add_prompt","总结 - 添加提示词按钮","apple","Add Prompt",添加提示词
+"sum_text_too_short","总结 - 字数不够","apple","Text too short for a summary.",文本过短，无法进行总结
+"sum_select_memos_title","总结 - 选择日记 - 标题","apple","Select entries to summarize",选择要总结的笔记
+# 提示词 #
+"prompt","提示词","apple","Prompt",提示词
+"prompt_title","提示词 - title","apple","Title",标题
+"prompt_desc","提示词 - 描述","apple","Description",描述
+"prompt_temperature","提示词 - 温度","apple","Temperature",温度参数
+"prompt_temperature_desc","提示词 - 温度参数描述","apple","Higher values will make the output more random, while lower values will make it more focused and deterministic.",数值越高，输出结果越随机； 数值越低，输出结果越确定。
+"prompt_content","提示词 - content","apple","Prompt",提示词
+"prompt_content_template","提示词 - 模版","apple","Today is {{date}}. You are a biographical writer. I hope you can become my biographical assistant.
+I will write down my random thoughts and notes throughout the day.
+I will ask you to: 
+1. Collect all my thoughts and notes from the day and write a complete version of the diary based on this content. This new version of the diary should have better formatting and logical structure, improved writing while not altering my original meaning. Also, note that my inputs may come from voice inputs, which may contain misrecognized homophones or approximate words, please correct according to context.
+2. Summarize the key points in the diary.
+3. Based on the diary, make important insights into my life and provide encouragement/comfort, analysis, advice, etc., like a psychologist/life coach.","今天是 {{date}}。你是一位传记作家。我希望你能成为我的日记助手。 下面是我一天中随机的想法和笔记。
+请你：
+1. 根据这些内容写一个完整版的日记。这个新版本的日记要有更好的格式和逻辑结构，更好的写作水平同时不改变我的原意。
+并且注意我的输入可能来自于语音输入，其中有可能存在错误识别同音字或者近似音单词的情况，请根据上下文进行修正。
+2. 总结日记中的关键要点
+3. 根据日记，对我生活做出的重要洞察并像一位心理专家/人生导师一样给出鼓励/安慰、分析、建议等"
+# Credits #
+# Watch #
+"watch_permission_title","Watch - 没有权限 - 标题","apple","Microphone Access",麦克风访问权限
+"watch_permission_msg","Watch - 没有权限 - 内容","apple","Murmurs will not work without access to the microphone. You can enable access in Settings.",没有麦克风访问权限，Murmurs 将无法正常工作。您可以在系统设置种启用访问权限。
+"watch_recents","Watch - 最近录音","apple","Recents",最近录音
+"watch_recents_empty","Watch - 没有录音","apple","No Recordings",无录音
+"settings_sum_model","设置 - 总结 - 模型","apple","Summarization Model",总结模型
+"settings_trans_model","设置 - 转写 - 模型","apple","Transcription Model",转录模型
+# Readwise #
+"readwise_token_help","Readwise token 帮助链接","apple","Get your token at readwise.io/access_token",在 readwise.io/access_token 获取你的 Token
+"readwise_disconnect","断开 Readwise","apple","Disconnect",断开连接
+"readwise_sync","同步到 Readwise","apple","Sync to Readwise",同步到 Readwise
+"readwise_auto_sync","自动同步到 Readwise","apple","Auto Sync",自动同步
+"readwise_unsync","从 Readwise 删除","apple","Remove from Readwise",从 Readwise 删除
+# AI Polish #
+"polish","AI 润色","apple","AI Polish",AI 润色
+"repolish","重新润色","apple","Re-polish",重新润色
+"delete_polish","删除润色","apple","Delete Polish",删除润色
+"polishing","正在润色","apple","Polishing ...",正在润色 ...
+"polish_server_not_set","润色 - 服务器未配置","apple","Please configure the AI server in Settings first.",请先在设置中配置 AI 服务器。
+"generate_title","生成标题","apple","Generate Title",生成标题
+"regenerate_title","重新生成标题","apple","Re-generate Title",重新生成标题
+"delete_title","删除标题","apple","Delete Title",删除标题
+"generating_title","正在生成标题","apple","Generating Title ...",正在生成标题 ...
+"search_placeholder","搜索提示","apple","Search memos...",搜索备忘录...
+"search_no_results","搜索无结果","apple","No results",无结果
+"pause","暂停","apple","Pause",暂停
+"resume","继续","apple","Resume",继续
+"continue_recording","继续录音","apple","Continue Recording",继续录音
+"merging_audio","合并音频中","apple","Merging audio...",正在合并音频...
+# Web #
+"web.landing.tagline","网页 - 首页标语","web","Your voice journal",你的语音日记
+"web.landing.description","网页 - 首页介绍，也用作页面描述","web","Record voice memos, transcribe them, and summarize your days with AI.",录下语音笔记，自动转写，并用 AI 总结你的每一天。
+"web.landing.platforms","网页 - 当前支持的平台","web","Currently available on iPhone and Apple Watch.",目前支持 iPhone 和 Apple Watch。
+"web.errors.not_found","网页 - 页面不存在","web","The page you are looking for does not exist.",你访问的页面不存在。
+"web.errors.go_back","网页 - 返回上一页","web","Go back",返回
+"web.errors.home","网页 - 回到首页","web","Home",首页
+"web.theme.toggle","网页 - 切换主题（屏幕阅读器）","web","Toggle theme",切换主题
+"web.language.toggle","网页 - 切换语言（屏幕阅读器）","web","Toggle language",切换语言
+"web.language.en","网页 - 语言名称：英文","web","English",English
+"web.language.zh_hans","网页 - 语言名称：简体中文","web","简体中文",简体中文

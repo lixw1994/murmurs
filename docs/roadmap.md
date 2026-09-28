@@ -1,6 +1,6 @@
 # Murmurs 路线图
 
-> 最后更新：2026-09-28 · 目标架构的决策见 [`adr/`](../adr/)（ADR-0001 至 ADR-0013），当前系统见 [architecture.md](./architecture.md)
+> 最后更新：2026-09-28 · 目标架构的决策见 [`adr/`](../adr/)（ADR-0001 至 ADR-0014），当前系统见 [architecture.md](./architecture.md)
 > 状态：⬜ 未开始 · 🟡 进行中 · ✅ 完成
 
 ## 总览
@@ -15,7 +15,7 @@ P0 骨架 ──► P1 同步 ──► P2 流水线 ──► P3 功能对齐 �
 
 | 阶段 | 目标 | 完成标志 | 状态 |
 |---|---|---|---|
-| P0 | monorepo、服务端骨架、登录 | iOS 和 Web 都能用 Apple 或 Google 登录 | 🟡 |
+| P0 | monorepo、服务端骨架、登录 | iOS 和 Web 都能用 Apple 或 Google 登录 | 🟡 骨架完成，登录待做 |
 | P1 | 同步引擎 | iPhone 上改一条 memo，Web 上实时看到 | ⬜ |
 | P2 | 音频与转写流水线 | 离线录音，联网后自动完成转写和标题 | ⬜ |
 | P3 | 功能对齐，Web 可用 | iOS 功能不少于 v0，Web 能完成主要流程 | ⬜ |
@@ -30,21 +30,23 @@ P0 骨架 ──► P1 同步 ──► P2 流水线 ──► P3 功能对齐 �
 **目标**：把仓库和基础设施搭好，登录流程全部跑通。
 
 - [x] iOS 最低版本提到 18.0，watchOS 提到 11.0（`project.yml`、CLAUDE.md）
-- [x] 目标架构决策写成 ADR-0001 至 ADR-0013；`docs/architecture.md` 改为描述当前系统；写好路线图
+- [x] 目标架构决策写成 ADR-0001 至 ADR-0013（ADR-0014 随骨架变更新增）；`docs/architecture.md` 改为描述当前系统；写好路线图
 - [x] 接入 paseo-agent-team 工作流：旧 spec 补齐结构、`CLAUDE.md` 引入 `AGENTS.md`、skill 链接到 `.claude/skills/`
 - [x] 更新 `openspec/config.yaml`（当前与目标架构的上下文、分区验证命令、各 artifact 规则）、`CLAUDE.md`、`README.md`
-- [ ] **仓库改成 monorepo**
-  - [ ] 把现有 Swift 工程移到 `apple/`（project.yml、Sources、Shared、Watch、WatchWidget、Packages、Tests、SnapshotTests、Resources、fastlane）
-  - [ ] 更新 CLAUDE.md 和 CI 里的路径与命令
-  - [ ] 把 `Localizable.csv` 和 `scripts/l10n` 移到 `l10n/`，生成器新增输出 i18next JSON（Android 的 strings.xml 留到 P5）
-- [ ] **初始化 `web/`**（从 `react-tanstarter` 复制，**不带** `.env*` 和 `.wrangler/`）
-  - [ ] 改名为 murmurs，新建 D1，配置 dev、staging、prod 三套环境
-  - [ ] 数据库迁移从 `db:push` 改为 `drizzle-kit generate` 加 `wrangler d1 migrations apply`
-  - [ ] 新增 `routes/api/v1/$.ts`，挂载 Hono 加 zod-openapi 的骨架，先提供 `GET /api/v1/me`
-  - [ ] 脚本导出 `contract/openapi.json`，CI 检查它和代码是否一致
-- [ ] **登录**
-  - [ ] Better Auth：加 Apple provider、`bearer()` 插件、邮箱 OTP；关掉 GitHub 和飞书
+- [x] **仓库改成 monorepo**（变更 `monorepo-and-server-skeleton`）
+  - [x] 把现有 Swift 工程移到 `apple/`（project.yml、Sources、Shared、Watch、WatchWidget、Packages、Tests、SnapshotTests、Resources、fastlane）
+  - [x] 更新 CLAUDE.md 和 CI 里的路径与命令；CI 拆成 apple、web、contract、l10n 四个 workflow
+  - [x] 把 `Localizable.csv` 和生成器移到 `l10n/`，新增 `platforms` 列和 i18next JSON 输出（Android 的 strings.xml 留到 P5）
+- [x] **初始化 `web/`**（从 `react-tanstarter` 复制，**不带** `.env*` 和 `.wrangler/`）
+  - [x] 改名为 murmurs，配置 dev、staging、prod 三套环境
+  - [x] 数据库迁移从 `db:push` 改为 `drizzle-kit generate` 加 `wrangler d1 migrations apply`
+  - [x] 新增 `routes/api/v1/$.ts`，挂载 Hono 加 zod-openapi 的骨架，提供 `GET /api/v1/health`
+  - [x] 脚本导出 `contract/openapi.json`，检查它和代码是否一致、有没有破坏性变更（ADR-0014），并验证 Swift 和 Kotlin 生成器能使用它
+  - [ ] **需要账号所有者操作**：创建 staging 和 production 的 D1，填入 `web/wrangler.toml`，设置 `BETTER_AUTH_SECRET`，应用迁移并部署 staging（步骤见该变更 design.md 的 Migration Plan）
+- [ ] **登录**（下一个变更）
+  - [ ] Better Auth：加 Apple provider、`bearer()` 插件、邮箱 OTP
   - [ ] 原生登录流程：客户端拿到 idToken，服务端换成 bearer token
+  - [ ] `GET /api/v1/me`
 - [ ] **Apple 端接入**
   - [ ] 用 `swift-openapi-generator` 生成 `ApiClient`
   - [ ] 实现 `AuthService`：Sign in with Apple、Google，token 存在 Keychain

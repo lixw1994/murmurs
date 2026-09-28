@@ -1,0 +1,23 @@
+name: Contract consumers
+
+on:
+  pull_request:
+    paths: ["contract/**", "web/src/server/api/**", ".github/workflows/contract.yml"]
+  push:
+    branches: [master]
+    paths: ["contract/**", "web/src/server/api/**", ".github/workflows/contract.yml"]
+
+jobs:
+  swift:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: swift-openapi-generator accepts the contract
+        run: contract/scripts/check-generators.sh swift
+
+  kotlin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: openapi-generator (Kotlin) accepts the contract
+        run: contract/scripts/check-generators.sh kotlin

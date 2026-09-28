@@ -1,0 +1,50 @@
+"$schema" = "node_modules/wrangler/config-schema.json"
+
+# Top level = local development (`pnpm dev`, tests). Deploy with
+# `pnpm deploy:staging` or `pnpm deploy:production`, which select [env.*].
+name = "murmurs-dev"
+compatibility_date = "2025-09-02"
+compatibility_flags = ["nodejs_compat"]
+main = "./src/server-entry.ts"
+
+[observability]
+enabled = true
+
+[vars]
+ENVIRONMENT = "development"
+
+# Secrets — set with `pnpm cf:secret put <KEY> --env <staging|production>`;
+# for local development put them in .dev.vars (see .dev.vars.example).
+# BETTER_AUTH_SECRET  - auth secret (min 32 chars), only needed by /api/auth/*
+
+[[d1_databases]]
+binding = "DB"
+database_name = "murmurs-db-dev"
+database_id = "murmurs-db-dev"
+migrations_dir = "drizzle"
+
+[env.staging]
+name = "murmurs-staging"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "murmurs-db-staging"
+# Create with `pnpm exec wrangler d1 create murmurs-db-staging` and paste the id.
+database_id = "REPLACE_WITH_STAGING_D1_ID"
+migrations_dir = "drizzle"
+
+[env.production]
+name = "murmurs"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "murmurs-db-production"
+# Create with `pnpm exec wrangler d1 create murmurs-db-production` and paste the id.
+database_id = "REPLACE_WITH_PRODUCTION_D1_ID"
+migrations_dir = "drizzle"

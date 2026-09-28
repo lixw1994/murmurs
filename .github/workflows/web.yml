@@ -1,0 +1,39 @@
+name: Web
+
+on:
+  pull_request:
+    paths: ["web/**", "contract/**", "l10n/**", ".github/workflows/web.yml"]
+  push:
+    branches: [master]
+    paths: ["web/**", "contract/**", "l10n/**", ".github/workflows/web.yml"]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - name: Install
+        run: pnpm --dir web install --frozen-lockfile
+      - name: Format, lint, types
+        run: pnpm --dir web check
+      - name: Tests
+        run: pnpm --dir web test
+      - name: Build
+        run: pnpm --dir web build
+      - name: Contract is up to date
+        run: contract/scripts/check-drift.sh
+      - name: No breaking API changes
+        env:
+          # Pull requests compare with their base branch; pushes with the previous commit.
+          BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+        run: contract/scripts/check-breaking.sh

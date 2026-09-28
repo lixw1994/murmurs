@@ -11,7 +11,7 @@ Verified facts this design relies on (checked 2026-09-28):
 | Test runner | `@cloudflare/vitest-pool-workers` 0.22.0 requires `vitest ^4.1`; `vitest` 4.1.11 accepts Vite `^6 \|\| ^7 \|\| ^8`; the latest `vitest` is 5.x and is incompatible |
 | oasdiff | Go binary (the npm package named `oasdiff` is a placeholder); Homebrew 1.32.1; a GitHub Action exists |
 | Local machine | Node 24, pnpm 10, Swift 6.4, Docker; no Java runtime; `wrangler` comes from the project devDependencies |
-| Localization | `Localizable.csv` has 288 Apple keys, `%@` and `%d` placeholders, literal `{{date}}` in prompt text, and section comment rows such as `# Plist #` |
+| Localization | `Localizable.csv` has 163 Apple keys (162 strings plus one InfoPlist key), `%@` and `%d` placeholders, literal `{{date}}` in prompt text, and section comment rows such as `# Plist #` |
 | Legal pages | `html/*.html` are sources of pages hosted at `lixw1994.github.io/murmurs`; this repository does not serve them |
 | `.gitignore` | Rules such as `fastlane/report.xml` and `*.xcodeproj/**` contain a slash, so they only match at the repository root and stop matching after the move |
 
@@ -87,7 +87,7 @@ D1 schema changes use `drizzle-kit generate` (output `web/drizzle/`, set as `mig
 
 `rake l10n` at the repository root runs the generator with the Apple and web output paths. Web locale ids become `en` and `zh-Hans`, replacing the template's `zh`, so both platforms use the same language tags.
 
-*Alternatives:* a key prefix convention instead of a column (rejected: it cannot express shared keys without renaming the 288 existing keys); escaping `{{` for i18next (rejected: i18next has no escape syntax for literal braces).
+*Alternatives:* a key prefix convention instead of a column (rejected: it cannot express shared keys without renaming the 163 existing keys); escaping `{{` for i18next (rejected: i18next has no escape syntax for literal braces).
 
 ### D5. API: Hono mounted through a catch-all server route
 
