@@ -31,7 +31,12 @@ Enable the `anonymous` (with `emailDomainName: "anonymous.murmurs.denkit.app"`) 
 
 `/api/v1` handlers obtain `auth.$context.internalAdapter` to create users and sessions, and use `auth.api.getSession({ headers })` (bearer plugin) to authenticate. Social sign-in can later reuse the same user table, and the `anonymous` plugin already supports linking an anonymous user to a real account.
 
-`getAuth(db, env)` now takes its secret and base URL from the Worker `env` instead of `process.env`, so the API and the tests pass bindings explicitly. `server-entry.ts` passes `env`. The `tanstackStartCookies` plugin is removed: its after-hook imports TanStack Start server internals, which breaks `auth.api.getSession` when it is called from the Hono API (and from tests). Nothing calls `auth.api` from TanStack Start server functions, and `/api/auth/*` returns cookies through `auth.handler` directly.
+`getAuth(db, env)` now takes its secret and base URL from the Worker `env` instead of `process.env`, so the API and the tests pass bindings explicitly. `server-entry.ts` passes `env`. The `tanstackStartCookies` plugin is removed. It is an after-hook that runs only on direct `auth.api.*` calls (it skips router requests, so `/api/auth/*` is unaffected). When Better Auth sets a cookie, it imports `@tanstack/react-start/server` and writes the cookie onto the TanStack Start response. Reasons for removing it:
+- The only direct `auth.api` call is `getSession` in the `/api/v1` `requireSession` middleware. There, forwarding a session cookie is unwanted, because native clients authenticate with bearer tokens.
+- It couples the Hono API to TanStack Start internals (ADR-0004 keeps the API framework-independent). Under Vitest the import fails, so every authenticated API test returned 500.
+- `/api/auth/*` returns its cookies through `auth.handler` without the plugin.
+
+*Correction (2026-09-28):* an earlier version of this paragraph said the plugin breaks `getSession` "when it is called from the Hono API". Only the Vitest failure was observed. In the deployed Worker the import likely resolves, so the plugin would not fail there; it would add the session cookie to API responses instead. That behavior was not verified in production.
 
 *Alternative:* a custom users and sessions implementation without Better Auth. Rejected: it would have to be replaced or bridged when social sign-in returns, and Better Auth already provides session storage, expiry, and extension.
 

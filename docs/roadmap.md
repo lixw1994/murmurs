@@ -109,9 +109,10 @@ P0 骨架 ──► P1 同步 ──► P2 流水线 ──► P3 功能对齐 �
 **目标**：iOS 功能不少于 v0；Web 能完成主要流程。
 
 - [ ] `POST /summaries/generate`：SSE 流式返回，完成后写入 DO
-- [ ] prompt 改为同步数据，首次登录时写入默认 prompt
+- [ ] prompt 改为同步数据，账号创建时写入默认 prompt
 - [ ] iOS 总结流程改为调用服务端（界面不变）
 - [ ] Readwise 移到服务端：`integrations` 表，token 加密存储，由 Cron 增量同步；删除客户端的 Readwise 代码
+- [ ] **Web 账号**：在浏览器里创建匿名账号，或用恢复码恢复，会话用 Cookie 保存。浏览器最好直接请求 `/api/auth/*` 或 `/api/v1`，Cookie 由 handler 返回。如果一定要在 TanStack Start 的 server function 里调用 `auth.api`，就给 Web 单独建一个带 `tanstackStartCookies` 插件的 auth 实例，不要把这个插件加回 `/api/v1` 用的实例（会把会话 Cookie 写进原生 API 的响应，并让 API 依赖 TanStack Start，见 anonymous-accounts 的 design D1）
 - [ ] **Web 页面**：时间线（按天、日历、搜索）、录音（MediaRecorder）、memo 编辑、总结流程、prompt 管理、设置
 - [ ] 导出：CSV、Markdown 由服务端生成（各端都能用）；PDF 仍由客户端生成
 - [ ] Widget、Live Activity、App Intents 改为读取 App Group 里的共享数据
