@@ -83,6 +83,7 @@ Xcode build tool plugins must be trusted. Command-line builds (CLAUDE.md, `opens
 - [Anyone can create accounts] → Per-IP rate limit. Accounts cost one D1 row until sync stores data; quotas arrive with billing (P4).
 - [Build tool plugin trust prompts] → Documented, and `-skipPackagePluginValidation` is used for command-line and CI builds.
 - [`cf-connecting-ip` is absent locally, so every local request shares one bucket] → Acceptable for development; tests rely on it to exercise the limit.
+- [Cloudflare's rate limiter is approximate (per-location, eventually consistent). On staging, 24 of 40 rapid recovery requests passed before the first 429 appeared.] → Accepted: 125-bit codes make guessing infeasible regardless of rate, so the limit only curbs abuse. If exact limits become necessary, add a per-IP Durable Object counter. The spec states that enforcement is approximate.
 
 ## Migration Plan
 

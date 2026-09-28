@@ -6,6 +6,12 @@
     "description": "Public HTTP API for Murmurs clients. Backward compatible within v1 (adr/0014)."
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
     "schemas": {
       "HealthResponse": {
         "type": "object",
@@ -43,7 +49,7 @@
             "properties": {
               "code": {
                 "type": "string",
-                "description": "Machine-readable error code. Known values: invalid_request, not_found, internal_error. New codes may be added; handle unknown codes as a generic error.",
+                "description": "Machine-readable error code. Known values: invalid_request, not_found, internal_error, unauthorized, invalid_recovery_code, rate_limited. New codes may be added; handle unknown codes as a generic error.",
                 "example": "not_found"
               },
               "message": {
@@ -64,6 +70,94 @@
         },
         "required": [
           "error"
+        ]
+      },
+      "AccountCredentials": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "Session token for `Authorization: Bearer`"
+          },
+          "recoveryCode": {
+            "type": "string",
+            "description": "Recovery code: 25 Crockford base32 characters in five hyphen-separated groups. Returned only when created or rotated.",
+            "example": "7K3QX-M2D9A-P4TVN-8HWRC-Z6E1B"
+          }
+        },
+        "required": [
+          "userId",
+          "token",
+          "recoveryCode"
+        ]
+      },
+      "SessionCredentials": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "Session token for `Authorization: Bearer`"
+          }
+        },
+        "required": [
+          "userId",
+          "token"
+        ]
+      },
+      "RecoverRequest": {
+        "type": "object",
+        "properties": {
+          "recoveryCode": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "recoveryCode"
+        ]
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "isAnonymous": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recoveryCodeCreatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "userId",
+          "isAnonymous",
+          "createdAt",
+          "recoveryCodeCreatedAt"
+        ]
+      },
+      "RecoveryCode": {
+        "type": "object",
+        "properties": {
+          "recoveryCode": {
+            "type": "string",
+            "description": "Recovery code: 25 Crockford base32 characters in five hyphen-separated groups. Returned only when created or rotated.",
+            "example": "7K3QX-M2D9A-P4TVN-8HWRC-Z6E1B"
+          }
+        },
+        "required": [
+          "recoveryCode"
         ]
       }
     },
@@ -87,6 +181,318 @@
           },
           "400": {
             "description": "The request does not match the endpoint's schema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts": {
+      "post": {
+        "operationId": "createAccount",
+        "summary": "Create an anonymous account",
+        "responses": {
+          "201": {
+            "description": "The account, a session token, and its recovery code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountCredentials"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request does not match the endpoint's schema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests from this client (`rate_limited`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/recover": {
+      "post": {
+        "operationId": "recoverSession",
+        "summary": "Start a new session for the account that owns a recovery code",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoverRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A new session for the account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionCredentials"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request does not match the endpoint's schema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unknown or malformed recovery code (`invalid_recovery_code`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests from this client (`rate_limited`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "getMe",
+        "summary": "The authenticated account",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request does not match the endpoint's schema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, unknown, expired, or revoked session token (`unauthorized`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteAccount",
+        "summary": "Permanently delete the account, its sessions, and its recovery code",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "The request does not match the endpoint's schema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, unknown, expired, or revoked session token (`unauthorized`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/recovery-code": {
+      "post": {
+        "operationId": "rotateRecoveryCode",
+        "summary": "Replace the recovery code; the previous code stops working",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The new recovery code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCode"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request does not match the endpoint's schema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, unknown, expired, or revoked session token (`unauthorized`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/current": {
+      "delete": {
+        "operationId": "signOut",
+        "summary": "Revoke the session used for this request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Signed out"
+          },
+          "400": {
+            "description": "The request does not match the endpoint's schema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, unknown, expired, or revoked session token (`unauthorized`)",
             "content": {
               "application/json": {
                 "schema": {

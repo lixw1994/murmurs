@@ -27,6 +27,8 @@ xcodegen
 open Murmurs.xcodeproj
 ```
 
+The first time Xcode builds the `MurmursAPI` package, approve its swift-openapi-generator build plugin ("Trust & Enable"). Command-line builds pass `-skipPackagePluginValidation` instead. Debug builds talk to the staging API at `https://murmurs-staging.denkit.app`.
+
 ## Run the web app locally
 
 ```shell

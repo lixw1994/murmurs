@@ -488,3 +488,66 @@
 
 /*合并音频中*/
 "merging_audio" = "正在合并音频...";
+
+/*设置 - 账号分节标题*/
+"settings_account" = "账号";
+
+/*账号 - 已就绪*/
+"account_status_ready" = "账号已就绪。";
+
+/*账号 - 尚未创建*/
+"account_status_none" = "尚未创建账号，联网后会自动创建。";
+
+/*账号 - 设置中*/
+"account_status_working" = "正在设置账号…";
+
+/*账号 - 需要恢复*/
+"account_status_needs_restore" = "此设备已无法访问你的账号，请用恢复码恢复。";
+
+/*账号 - 恢复码标题*/
+"account_recovery_code" = "恢复码";
+
+/*账号 - 恢复码说明*/
+"account_recovery_code_footer" = "恢复码是在其他设备上恢复账号的唯一方式，请妥善保存。它也会保存在你的 iCloud 钥匙串中。";
+
+/*账号 - 显示恢复码*/
+"account_reveal_code" = "显示恢复码";
+
+/*账号 - 隐藏恢复码*/
+"account_hide_code" = "隐藏恢复码";
+
+/*账号 - 已复制恢复码*/
+"account_code_copied" = "已复制恢复码";
+
+/*账号 - 生成新恢复码*/
+"account_rotate_code" = "生成新的恢复码";
+
+/*账号 - 生成新恢复码确认*/
+"account_rotate_code_confirm" = "当前的恢复码将立即失效。";
+
+/*账号 - 用恢复码恢复*/
+"account_restore" = "用恢复码恢复";
+
+/*账号 - 恢复说明*/
+"account_restore_footer" = "此设备将切换到该恢复码对应的账号。";
+
+/*账号 - 恢复按钮*/
+"account_restore_button" = "恢复";
+
+/*账号 - 删除账号*/
+"account_delete" = "删除账号";
+
+/*账号 - 删除确认*/
+"account_delete_confirm" = "账号将从服务器删除，此设备上的笔记会保留。";
+
+/*账号 - 恢复码无效*/
+"account_error_invalid_code" = "恢复码无效。";
+
+/*账号 - 网络错误*/
+"account_error_network" = "无法连接服务器，请检查网络后重试。";
+
+/*账号 - 请求过多*/
+"account_error_rate_limited" = "尝试次数过多，请一分钟后再试。";
+
+/*账号 - 通用错误*/
+"account_error_generic" = "出了点问题，请重试。";

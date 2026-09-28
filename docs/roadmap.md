@@ -1,6 +1,6 @@
 # Murmurs 路线图
 
-> 最后更新：2026-09-28 · 目标架构的决策见 [`adr/`](../adr/)（ADR-0001 至 ADR-0014），当前系统见 [architecture.md](./architecture.md)
+> 最后更新：2026-09-28 · 目标架构的决策见 [`adr/`](../adr/)（ADR-0001 至 ADR-0015），当前系统见 [architecture.md](./architecture.md)
 > 状态：⬜ 未开始 · 🟡 进行中 · ✅ 完成
 
 ## 总览
@@ -15,7 +15,7 @@ P0 骨架 ──► P1 同步 ──► P2 流水线 ──► P3 功能对齐 �
 
 | 阶段 | 目标 | 完成标志 | 状态 |
 |---|---|---|---|
-| P0 | monorepo、服务端骨架、登录 | iOS 和 Web 都能用 Apple 或 Google 登录 | 🟡 骨架完成，登录待做 |
+| P0 | monorepo、服务端骨架、账号 | iOS 首次启动自动拥有账号，能用恢复码换设备 | ✅ 待真机验证 iCloud 钥匙串同步 |
 | P1 | 同步引擎 | iPhone 上改一条 memo，Web 上实时看到 | ⬜ |
 | P2 | 音频与转写流水线 | 离线录音，联网后自动完成转写和标题 | ⬜ |
 | P3 | 功能对齐，Web 可用 | iOS 功能不少于 v0，Web 能完成主要流程 | ⬜ |
@@ -44,16 +44,18 @@ P0 骨架 ──► P1 同步 ──► P2 流水线 ──► P3 功能对齐 �
   - [x] 脚本导出 `contract/openapi.json`，检查它和代码是否一致、有没有破坏性变更（ADR-0014），并验证 Swift 和 Kotlin 生成器能使用它
   - [x] staging 上线：D1 `murmurs-db-staging`、迁移、`BETTER_AUTH_SECRET`，部署到 https://murmurs-staging.denkit.app
   - [ ] production：创建 `murmurs-db-production`，填入 `web/wrangler.toml`，设置密钥，应用迁移并部署到 https://murmurs.denkit.app（登录变更完成后再做）
-- [ ] **登录**（下一个变更）
-  - [ ] Better Auth：加 Apple provider、`bearer()` 插件、邮箱 OTP
-  - [ ] 原生登录流程：客户端拿到 idToken，服务端换成 bearer token
-  - [ ] `GET /api/v1/me`
-- [ ] **Apple 端接入**
-  - [ ] 用 `swift-openapi-generator` 生成 `ApiClient`
-  - [ ] 实现 `AuthService`：Sign in with Apple、Google，token 存在 Keychain
-  - [ ] 做登录页，让 App 能进入“已登录”状态
+- [x] **账号**（变更 `anonymous-accounts`，ADR-0015 取代 ADR-0011：先做匿名账号 + 恢复码，不接入社交登录）
+  - [x] `/api/v1` 账号接口：创建、恢复、`me`、生成新恢复码、退出、删除；恢复码只存哈希；按 IP 限流
+  - [x] Better Auth 启用 anonymous 和 bearer 插件，关闭它自带的登录入口；会话有效期 365 天，使用时自动延长
+  - [x] staging 已部署迁移 0001，完整流程在线上验证过
+- [x] **Apple 端接入**
+  - [x] `apple/Packages/MurmursAPI`：用 swift-openapi-generator 从契约生成客户端
+  - [x] `AccountService`：首次启动在后台自动建号或恢复；token 只存本机，恢复码存在 iCloud 钥匙串
+  - [x] 设置 → 账号：显示和复制恢复码、生成新恢复码、用恢复码恢复、删除账号
+- [ ] 在真机上验证 iCloud 钥匙串同步恢复码（模拟器无法验证）
+- [ ] 社交登录（Apple、Google、邮箱）与账号绑定：以后单独做一个变更
 
-**完成标志**：iOS 模拟器和 Web 都能完成 Apple 和 Google 登录；iOS 调用 `/api/v1/me` 返回当前用户。
+**完成标志**：iOS 首次启动后自动拥有账号，`/api/v1/me` 返回该账号；换设备后能用恢复码找回。✅（iCloud 钥匙串同步还需真机验证）
 
 ---
 

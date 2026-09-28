@@ -23,6 +23,17 @@ database_name = "murmurs-db-dev"
 database_id = "murmurs-db-dev"
 migrations_dir = "drizzle"
 
+# Per-IP limits for unauthenticated account endpoints (adr/0015).
+[[ratelimits]]
+name = "ACCOUNT_CREATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
+
+[[ratelimits]]
+name = "ACCOUNT_RECOVER_LIMITER"
+namespace_id = "1002"
+simple = { limit = 5, period = 60 }
+
 [env.staging]
 name = "murmurs-staging"
 workers_dev = false
@@ -37,6 +48,17 @@ binding = "DB"
 database_name = "murmurs-db-staging"
 database_id = "bfbee026-7122-4c19-9af5-cb4a0e500411"
 migrations_dir = "drizzle"
+
+# Per-IP limits for unauthenticated account endpoints (adr/0015).
+[[env.staging.ratelimits]]
+name = "ACCOUNT_CREATE_LIMITER"
+namespace_id = "2001"
+simple = { limit = 10, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "ACCOUNT_RECOVER_LIMITER"
+namespace_id = "2002"
+simple = { limit = 5, period = 60 }
 
 [env.production]
 name = "murmurs"
@@ -53,3 +75,14 @@ database_name = "murmurs-db-production"
 # Create with `pnpm exec wrangler d1 create murmurs-db-production` and paste the id.
 database_id = "REPLACE_WITH_PRODUCTION_D1_ID"
 migrations_dir = "drizzle"
+
+# Per-IP limits for unauthenticated account endpoints (adr/0015).
+[[env.production.ratelimits]]
+name = "ACCOUNT_CREATE_LIMITER"
+namespace_id = "3001"
+simple = { limit = 10, period = 60 }
+
+[[env.production.ratelimits]]
+name = "ACCOUNT_RECOVER_LIMITER"
+namespace_id = "3002"
+simple = { limit = 5, period = 60 }

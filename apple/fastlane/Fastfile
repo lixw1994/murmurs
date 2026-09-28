@@ -13,7 +13,9 @@ platform :ios do
     })
 
     gym ({
-      scheme: 'Murmurs'
+      scheme: 'Murmurs',
+      # The MurmursAPI package runs the swift-openapi-generator build plugin.
+      xcargs: '-skipPackagePluginValidation'
     })
 
     upload_to_testflight(
@@ -23,6 +25,6 @@ platform :ios do
   end
 
   lane :tests do
-    run_tests(scheme: "Murmurs", devices: ["iPhone 17 Pro"])
+    run_tests(scheme: "Murmurs", devices: ["iPhone 17 Pro"], xcargs: "-skipPackagePluginValidation")
   end
 end

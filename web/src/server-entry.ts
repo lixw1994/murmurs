@@ -30,7 +30,7 @@ export default {
         env,
         executionCtx: ctx,
         db,
-        getAuth: () => (auth ??= getAuth(db)),
+        getAuth: () => (auth ??= getAuth(db, env)),
         waitUntil: ctx.waitUntil.bind(ctx),
         passThroughOnException: ctx.passThroughOnException.bind(ctx),
       },

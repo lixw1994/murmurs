@@ -8,9 +8,11 @@ const authEnvSchema = z.object({
 export type AuthEnv = z.infer<typeof authEnvSchema>;
 
 /**
- * Parse the auth-related secrets on first use, not at module load, so routes
+ * Parse the auth-related bindings on first use, not at module load, so routes
  * that do not touch auth (e.g. /api/v1/health) work without them.
  */
-export function getAuthEnv(): AuthEnv {
-  return authEnvSchema.parse(process.env);
+export type AuthBindings = { BETTER_AUTH_SECRET?: unknown; BETTER_AUTH_URL?: unknown };
+
+export function getAuthEnv(env: AuthBindings): AuthEnv {
+  return authEnvSchema.parse(env);
 }

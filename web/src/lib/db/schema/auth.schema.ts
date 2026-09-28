@@ -14,6 +14,8 @@ export const user = sqliteTable("user", {
     .$defaultFn(() => new Date())
     .$onUpdate(() => new Date())
     .notNull(),
+  // Better Auth anonymous plugin
+  isAnonymous: integer("is_anonymous", { mode: "boolean" }).default(false),
 });
 
 export const session = sqliteTable(

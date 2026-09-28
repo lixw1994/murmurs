@@ -5,6 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject var config: Config
     @Environment(AppState.self) var appState
     @EnvironmentObject var appDelegate: AppDelegate
+    @Environment(AccountService.self) var accountService
     
     @State private var showPremium = false
     @State private var showExport = false
@@ -24,6 +25,7 @@ struct SettingsView: View {
         NavigationStack {
             VStack {
                 Form {
+                    sectionAccount
                     sectionGeneral
                     sectionServer
                     
@@ -53,6 +55,29 @@ struct SettingsView: View {
         }
     }
     
+    private var sectionAccount: some View {
+        Section {
+            NavigationLink(destination: AccountSettingsView(service: accountService)) {
+                HStack {
+                    Text(L(.settings_account))
+                    Spacer()
+                    switch accountService.state {
+                    case .ready:
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    case .needsRestore:
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                    case .working:
+                        ProgressView()
+                    case .none:
+                        EmptyView()
+                    }
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     private var sectionGeneral: some View {
         @Bindable var appState = appState

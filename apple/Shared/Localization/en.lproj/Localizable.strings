@@ -488,3 +488,66 @@ I will ask you to:
 
 /*合并音频中*/
 "merging_audio" = "Merging audio...";
+
+/*设置 - 账号分节标题*/
+"settings_account" = "Account";
+
+/*账号 - 已就绪*/
+"account_status_ready" = "Your account is set up.";
+
+/*账号 - 尚未创建*/
+"account_status_none" = "No account yet. It will be created automatically when you're online.";
+
+/*账号 - 设置中*/
+"account_status_working" = "Setting up your account…";
+
+/*账号 - 需要恢复*/
+"account_status_needs_restore" = "This device can no longer access your account. Restore it with your recovery code.";
+
+/*账号 - 恢复码标题*/
+"account_recovery_code" = "Recovery Code";
+
+/*账号 - 恢复码说明*/
+"account_recovery_code_footer" = "Your recovery code is the only way to restore your account on another device. Keep it somewhere safe. It is also saved in your iCloud Keychain.";
+
+/*账号 - 显示恢复码*/
+"account_reveal_code" = "Show Recovery Code";
+
+/*账号 - 隐藏恢复码*/
+"account_hide_code" = "Hide Recovery Code";
+
+/*账号 - 已复制恢复码*/
+"account_code_copied" = "Recovery code copied";
+
+/*账号 - 生成新恢复码*/
+"account_rotate_code" = "Generate New Recovery Code";
+
+/*账号 - 生成新恢复码确认*/
+"account_rotate_code_confirm" = "Your current recovery code will stop working.";
+
+/*账号 - 用恢复码恢复*/
+"account_restore" = "Restore with Recovery Code";
+
+/*账号 - 恢复说明*/
+"account_restore_footer" = "This device will switch to the account that owns the code.";
+
+/*账号 - 恢复按钮*/
+"account_restore_button" = "Restore";
+
+/*账号 - 删除账号*/
+"account_delete" = "Delete Account";
+
+/*账号 - 删除确认*/
+"account_delete_confirm" = "Your account will be deleted from the server. Memos on this device are kept.";
+
+/*账号 - 恢复码无效*/
+"account_error_invalid_code" = "That recovery code is not valid.";
+
+/*账号 - 网络错误*/
+"account_error_network" = "Couldn't reach the server. Check your connection and try again.";
+
+/*账号 - 请求过多*/
+"account_error_rate_limited" = "Too many attempts. Try again in a minute.";
+
+/*账号 - 通用错误*/
+"account_error_generic" = "Something went wrong. Try again.";

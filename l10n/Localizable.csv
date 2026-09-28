@@ -192,6 +192,28 @@ I will ask you to:
 "resume","继续","apple","Resume",继续
 "continue_recording","继续录音","apple","Continue Recording",继续录音
 "merging_audio","合并音频中","apple","Merging audio...",正在合并音频...
+# Account #
+"settings_account","设置 - 账号分节标题","apple","Account",账号
+"account_status_ready","账号 - 已就绪","apple","Your account is set up.",账号已就绪。
+"account_status_none","账号 - 尚未创建","apple","No account yet. It will be created automatically when you're online.",尚未创建账号，联网后会自动创建。
+"account_status_working","账号 - 设置中","apple","Setting up your account…",正在设置账号…
+"account_status_needs_restore","账号 - 需要恢复","apple","This device can no longer access your account. Restore it with your recovery code.",此设备已无法访问你的账号，请用恢复码恢复。
+"account_recovery_code","账号 - 恢复码标题","apple","Recovery Code",恢复码
+"account_recovery_code_footer","账号 - 恢复码说明","apple","Your recovery code is the only way to restore your account on another device. Keep it somewhere safe. It is also saved in your iCloud Keychain.",恢复码是在其他设备上恢复账号的唯一方式，请妥善保存。它也会保存在你的 iCloud 钥匙串中。
+"account_reveal_code","账号 - 显示恢复码","apple","Show Recovery Code",显示恢复码
+"account_hide_code","账号 - 隐藏恢复码","apple","Hide Recovery Code",隐藏恢复码
+"account_code_copied","账号 - 已复制恢复码","apple","Recovery code copied",已复制恢复码
+"account_rotate_code","账号 - 生成新恢复码","apple","Generate New Recovery Code",生成新的恢复码
+"account_rotate_code_confirm","账号 - 生成新恢复码确认","apple","Your current recovery code will stop working.",当前的恢复码将立即失效。
+"account_restore","账号 - 用恢复码恢复","apple","Restore with Recovery Code",用恢复码恢复
+"account_restore_footer","账号 - 恢复说明","apple","This device will switch to the account that owns the code.",此设备将切换到该恢复码对应的账号。
+"account_restore_button","账号 - 恢复按钮","apple","Restore",恢复
+"account_delete","账号 - 删除账号","apple","Delete Account",删除账号
+"account_delete_confirm","账号 - 删除确认","apple","Your account will be deleted from the server. Memos on this device are kept.",账号将从服务器删除，此设备上的笔记会保留。
+"account_error_invalid_code","账号 - 恢复码无效","apple","That recovery code is not valid.",恢复码无效。
+"account_error_network","账号 - 网络错误","apple","Couldn't reach the server. Check your connection and try again.",无法连接服务器，请检查网络后重试。
+"account_error_rate_limited","账号 - 请求过多","apple","Too many attempts. Try again in a minute.",尝试次数过多，请一分钟后再试。
+"account_error_generic","账号 - 通用错误","apple","Something went wrong. Try again.",出了点问题，请重试。
 # Web #
 "web.landing.tagline","网页 - 首页标语","web","Your voice journal",你的语音日记
 "web.landing.description","网页 - 首页介绍，也用作页面描述","web","Record voice memos, transcribe them, and summarize your days with AI.",录下语音笔记，自动转写，并用 AI 总结你的每一天。

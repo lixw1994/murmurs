@@ -10,7 +10,7 @@ Engineering workflow rules (OpenSpec + ADR, Tech Lead / helper roles) live in AG
 
 **Murmurs** — a voice journal. Users record audio memos, transcribe them (Apple Speech or OpenAI Whisper), and summarize entries with OpenAI-compatible chat APIs. The shipped product is the iOS/watchOS app, which keeps all data on device and includes premium IAP, CSV/Markdown/PDF export, Readwise sync, and an Apple Watch companion.
 
-The project is pre-launch and is being rebuilt into a multi-platform product: native Apple/Android clients, a web app with an Electron desktop shell, and one Cloudflare Worker backend with per-user Durable Object sync. The monorepo layout and the Worker skeleton (`/api/v1`, no sign-in yet) exist; sync and product features come in later phases.
+The project is pre-launch and is being rebuilt into a multi-platform product: native Apple/Android clients, a web app with an Electron desktop shell, and one Cloudflare Worker backend with per-user Durable Object sync. The monorepo layout, the Worker (`/api/v1`), and anonymous accounts with recovery codes (ADR-0015; the iOS app creates one in the background) exist; sync and product features come in later phases.
 
 - `adr/` — in-force architecture decisions (ADR-0001..); read before designing any change
 - `docs/architecture.md` — current system; `docs/roadmap.md` — phases P0–P6
@@ -21,7 +21,7 @@ The project is pre-launch and is being rebuilt into a multi-platform product: na
 | Directory | Owns |
 |---|---|
 | `apple/` | Swift project (XcodeGen `project.yml`): iOS app, watchOS app, widgets, tests, fastlane |
-| `web/` | One Cloudflare Worker (from `react-tanstarter`): TanStack Start web UI, Hono API at `/api/v1`, Better Auth (no providers enabled), D1 |
+| `web/` | One Cloudflare Worker (from `react-tanstarter`): TanStack Start web UI, Hono API at `/api/v1` (health, anonymous accounts), Better Auth as user and session store (its own sign-in routes disabled), D1 |
 | `contract/` | `openapi.json` generated from the API, and the drift, breaking-change, and generator checks |
 | `l10n/` | `Localizable.csv` (single string source for Apple and web) and its generator |
 | `openspec/`, `adr/`, `docs/` | specs and changes, architecture decisions, documentation |
@@ -32,15 +32,15 @@ Every code change MUST be verified before considering the step complete. Run the
 
 | Area | Command | Passes when |
 |---|---|---|
-| Apple build (every Apple edit) | `cd apple && xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro' 2>&1 \| tail -5` | ends with `** BUILD SUCCEEDED **` |
-| Apple tests (logic changes) | `cd apple && xcodebuild test -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro' 2>&1 \| tail -20` | `** TEST SUCCEEDED **` |
+| Apple build (every Apple edit) | `cd apple && xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -skipPackagePluginValidation 2>&1 \| tail -5` | ends with `** BUILD SUCCEEDED **` |
+| Apple tests (logic changes) | `cd apple && xcodebuild test -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -skipPackagePluginValidation 2>&1 \| tail -20` | `** TEST SUCCEEDED **` |
 | Web | `pnpm --dir web check && pnpm --dir web test && pnpm --dir web build` | all exit 0 |
 | Contract (API changes) | `pnpm --dir web contract:generate`, then `contract/scripts/check-drift.sh` and `contract/scripts/check-breaking.sh` | "up to date" and no breaking changes |
-| Contract consumers (API changes) | `contract/scripts/check-generators.sh` (Swift; Docker for Kotlin) | "Contract is consumable" |
+| Contract consumers (API changes) | `contract/scripts/check-generators.sh` (Swift builds `apple/Packages/MurmursAPI`; Docker for Kotlin) | "Contract is consumable" |
 | Localization (string changes) | `rake l10n` and `ruby l10n/test_generate.rb` | generation succeeds; tests pass |
 | Specs | `openspec validate --all --strict` | all pass (also run by the pre-commit hook) |
 
-Run `xcodegen` inside `apple/` first if `project.yml` or the file layout changed.
+Run `xcodegen` inside `apple/` first if `project.yml` or the file layout changed. `-skipPackagePluginValidation` is required on the command line because `apple/Packages/MurmursAPI` runs the swift-openapi-generator build plugin; in Xcode, approve the plugin once ("Trust & Enable").
 
 ### Verification Workflow
 
@@ -68,7 +68,7 @@ Find the device ID, then build and install from `apple/`:
 ```shell
 cd apple
 xcodebuild -showdestinations -scheme Murmurs -project Murmurs.xcodeproj 2>&1 | grep "platform:iOS,"
-xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -configuration Debug -destination 'id=DEVICE_ID' -derivedDataPath /tmp/murmurs-build 2>&1 | tail -5
+xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -configuration Debug -destination 'id=DEVICE_ID' -derivedDataPath /tmp/murmurs-build -skipPackagePluginValidation 2>&1 | tail -5
 xcrun devicectl device install app --device DEVICE_ID /tmp/murmurs-build/Build/Products/Debug-iphoneos/Murmurs.app
 ```
 
@@ -86,7 +86,8 @@ pnpm --dir web dev                # http://localhost:3000, API at /api/v1
 
 - Local secrets go in `web/.dev.vars` (copy `web/.dev.vars.example`). Only `/api/auth/*` needs `BETTER_AUTH_SECRET`.
 - D1 schema: edit `web/src/lib/db/schema/`, run `pnpm --dir web db:generate`, commit the migration in `web/drizzle/`.
-- API: add routes under `web/src/server/api/routes/` with `createRoute` schemas and the shared error responses; native clients use only `/api/v1` (ADR-0004), and `/api/v1` stays backward compatible (ADR-0014).
+- API: add routes under `web/src/server/api/routes/` with `createRoute` schemas and the shared error responses; native clients use only `/api/v1` (ADR-0004), and `/api/v1` stays backward compatible (ADR-0014). Authenticated routes use the `requireSession` middleware (`Authorization: Bearer <token>`) and declare `security: [{ bearerAuth: [] }]`.
+- Accounts (ADR-0015): `POST /api/v1/accounts` creates an anonymous account with a recovery code; `POST /api/v1/sessions/recover` restores it; `GET`/`DELETE /api/v1/me`, `POST /api/v1/me/recovery-code`, `DELETE /api/v1/sessions/current`. Recovery codes are stored as SHA-256 hashes in `recovery_code`.
 - Environments: top-level `wrangler.toml` is local development. Staging is live at https://murmurs-staging.denkit.app (`pnpm --dir web deploy:staging`). Production is configured for https://murmurs.denkit.app but not deployed yet; it needs its D1 id and `BETTER_AUTH_SECRET` first. Apply remote migrations with `db:migrate:staging` / `db:migrate:production` before deploying schema changes.
 
 ## Localization (`l10n/`)

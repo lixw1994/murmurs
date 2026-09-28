@@ -1,7 +1,14 @@
 import { z } from "@hono/zod-openapi";
 
 /** Error codes returned by /api/v1. Add codes; never repurpose existing ones. */
-export const ERROR_CODES = ["invalid_request", "not_found", "internal_error"] as const;
+export const ERROR_CODES = [
+  "invalid_request",
+  "not_found",
+  "internal_error",
+  "unauthorized",
+  "invalid_recovery_code",
+  "rate_limited",
+] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
 /** Shared error envelope for every /api/v1 error response. */
@@ -39,4 +46,20 @@ export const errorResponses = {
     description: "Unexpected server error",
     content: { "application/json": { schema: ErrorResponse } },
   },
-} as const;
+};
+
+/** 401 for endpoints that require a session token. */
+export const unauthorizedResponse = {
+  401: {
+    description: "Missing, unknown, expired, or revoked session token (`unauthorized`)",
+    content: { "application/json": { schema: ErrorResponse } },
+  },
+};
+
+/** 429 for rate-limited endpoints. */
+export const rateLimitedResponse = {
+  429: {
+    description: "Too many requests from this client (`rate_limited`)",
+    content: { "application/json": { schema: ErrorResponse } },
+  },
+};

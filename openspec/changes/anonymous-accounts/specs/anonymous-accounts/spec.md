@@ -55,11 +55,15 @@ Authenticated `/api/v1` endpoints SHALL accept `Authorization: Bearer <token>`. 
 - **THEN** the response status is 401 with `error.code` equal to `"invalid_recovery_code"`
 
 ### Requirement: Rate limits on unauthenticated account endpoints
-The server SHALL limit account recovery to 5 requests per minute and account creation to 10 requests per minute per client IP address, and SHALL answer requests over the limit with HTTP 429 and error code `rate_limited`.
+The server SHALL apply per-client-IP rate limits of 5 requests per minute to account recovery and 10 requests per minute to account creation, and SHALL answer requests that the limiter rejects with HTTP 429 and error code `rate_limited`. Enforcement MAY be approximate: Cloudflare's rate limiter counts per location and is eventually consistent, so some requests beyond the nominal limit can pass. The limits are abuse protection; the recovery code's entropy, not the limiter, protects accounts from guessing.
 
 #### Scenario: Too many recovery attempts
-- **WHEN** a client sends more recovery requests than the limit allows within a minute
-- **THEN** the excess requests receive status 429 with `error.code` equal to `"rate_limited"`
+- **WHEN** a client keeps sending recovery requests well beyond the limit within a minute
+- **THEN** requests start receiving status 429 with `error.code` equal to `"rate_limited"`
+
+#### Scenario: Exact limit where the limiter is exact
+- **WHEN** a client exceeds the limit against the local runtime (Miniflare), where counting is exact
+- **THEN** the requests beyond the limit receive status 429
 
 ### Requirement: Account information
 `GET /api/v1/me` SHALL return the authenticated account's `userId`, `isAnonymous`, `createdAt`, and `recoveryCodeCreatedAt`.

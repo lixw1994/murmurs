@@ -35,6 +35,8 @@
 	<string>${GIT_HASH}</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>MurmursAPIBaseURL</key>
+	<string>$(MURMURS_API_BASE_URL)</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Murmurs requires access to your microphone so that you can record entries in your journal.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

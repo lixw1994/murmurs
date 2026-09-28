@@ -325,4 +325,46 @@ public enum MyLocalizedKey: String {
   case continue_recording = "continue_recording"
   /**合并音频中*/
   case merging_audio = "merging_audio"
+  /**设置 - 账号分节标题*/
+  case settings_account = "settings_account"
+  /**账号 - 已就绪*/
+  case account_status_ready = "account_status_ready"
+  /**账号 - 尚未创建*/
+  case account_status_none = "account_status_none"
+  /**账号 - 设置中*/
+  case account_status_working = "account_status_working"
+  /**账号 - 需要恢复*/
+  case account_status_needs_restore = "account_status_needs_restore"
+  /**账号 - 恢复码标题*/
+  case account_recovery_code = "account_recovery_code"
+  /**账号 - 恢复码说明*/
+  case account_recovery_code_footer = "account_recovery_code_footer"
+  /**账号 - 显示恢复码*/
+  case account_reveal_code = "account_reveal_code"
+  /**账号 - 隐藏恢复码*/
+  case account_hide_code = "account_hide_code"
+  /**账号 - 已复制恢复码*/
+  case account_code_copied = "account_code_copied"
+  /**账号 - 生成新恢复码*/
+  case account_rotate_code = "account_rotate_code"
+  /**账号 - 生成新恢复码确认*/
+  case account_rotate_code_confirm = "account_rotate_code_confirm"
+  /**账号 - 用恢复码恢复*/
+  case account_restore = "account_restore"
+  /**账号 - 恢复说明*/
+  case account_restore_footer = "account_restore_footer"
+  /**账号 - 恢复按钮*/
+  case account_restore_button = "account_restore_button"
+  /**账号 - 删除账号*/
+  case account_delete = "account_delete"
+  /**账号 - 删除确认*/
+  case account_delete_confirm = "account_delete_confirm"
+  /**账号 - 恢复码无效*/
+  case account_error_invalid_code = "account_error_invalid_code"
+  /**账号 - 网络错误*/
+  case account_error_network = "account_error_network"
+  /**账号 - 请求过多*/
+  case account_error_rate_limited = "account_error_rate_limited"
+  /**账号 - 通用错误*/
+  case account_error_generic = "account_error_generic"
 }

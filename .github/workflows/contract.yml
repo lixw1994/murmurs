@@ -2,10 +2,10 @@ name: Contract consumers
 
 on:
   pull_request:
-    paths: ["contract/**", "web/src/server/api/**", ".github/workflows/contract.yml"]
+    paths: ["contract/**", "web/src/server/api/**", "apple/Packages/MurmursAPI/**", ".github/workflows/contract.yml"]
   push:
     branches: [master]
-    paths: ["contract/**", "web/src/server/api/**", ".github/workflows/contract.yml"]
+    paths: ["contract/**", "web/src/server/api/**", "apple/Packages/MurmursAPI/**", ".github/workflows/contract.yml"]
 
 jobs:
   swift:

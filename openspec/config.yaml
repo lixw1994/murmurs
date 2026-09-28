@@ -4,11 +4,11 @@ context: |
   Project: Murmurs — voice journal (record → transcribe → AI summarize → export/sync).
   Stage: pre-launch, no users. Target the current product model only: no backward-compatibility
   fields, legacy branches, or data migrations unless the user explicitly asks (AGENTS.md).
-  Market: outside mainland China. Sign-in: Apple, Google, email OTP. Payments: RevenueCat subscriptions.
+  Market: outside mainland China. Accounts: anonymous with recovery codes, no sign-in screen (ADR-0015; social sign-in deferred). Payments: RevenueCat subscriptions.
   Domains: production https://murmurs.denkit.app (not yet deployed), staging https://murmurs-staging.denkit.app (live).
 
   Sources of truth — read before designing:
-    - adr/ (in-force architecture decisions, ADR-0001..0014)
+    - adr/ (in-force architecture decisions, ADR-0001..0015; ADR-0011 is superseded)
     - openspec/specs/ (current capabilities)
     - docs/architecture.md (CURRENT system) · docs/roadmap.md (phases P0–P6)
 
@@ -23,14 +23,20 @@ context: |
         targets Murmurs, MurmursWidget, MurmursWatch, MurmursWatchWidget, MurmursTests, SnapshotTests;
         xcodegen → apple/Murmurs.xcodeproj; configs Debug, Snapshot (SNAPSHOT flag), AppStore;
         SPM: KeychainAccess, ConfettiSwiftUI, DSWaveformImage, CSV.swift, TPPDF, MarkdownUI, XLog, XLang;
-        secrets in Keychain, never UserDefaults
+        secrets in Keychain, never UserDefaults; AccountService (Sources/Services/Account) creates or restores
+        the anonymous account on scene activation (token device-only, recovery code in iCloud Keychain) and
+        Settings → Account manages it; API client from Packages/MurmursAPI (swift-openapi-generator build
+        plugin over contract/openapi.json; command-line builds need -skipPackagePluginValidation);
+        Info.plist MurmursAPIBaseURL: Debug/Snapshot staging, AppStore production
     - web/ — one Cloudflare Worker from react-tanstarter: TanStack Start placeholder web UI; Hono
-        OpenAPI app at /api/v1 (src/server/api, mounted by src/routes/api/v1/$.ts) with GET /health and the
-        { error: { code, message, details? } } envelope; Better Auth mounted with no providers (sign-in
-        disabled); D1 via Drizzle with committed migrations in web/drizzle; wrangler envs dev (top level),
+        OpenAPI app at /api/v1 (src/server/api, mounted by src/routes/api/v1/$.ts): GET /health and
+        anonymous accounts (accounts, sessions/recover, me, me/recovery-code, sessions/current) with the
+        { error: { code, message, details? } } envelope, bearer auth via the requireSession middleware, and
+        per-IP rate-limit bindings; Better Auth (anonymous + bearer plugins) as user/session store with its
+        own sign-in routes disabled; recovery codes hashed in D1 recovery_code; D1 via Drizzle with committed migrations in web/drizzle; wrangler envs dev (top level),
         staging, production; tests with Vitest 4 + @cloudflare/vitest-pool-workers
     - contract/ — openapi.json (OpenAPI 3.0.3, committed) + check-drift / check-breaking (oasdiff) /
-        check-generators (swift-openapi-generator, Kotlin openapi-generator)
+        check-generators (builds apple/Packages/MurmursAPI; Kotlin openapi-generator in Docker)
     - l10n/ — Localizable.csv (key, comment, platforms, en, zh-Hans) → `rake l10n` → Apple L(.key) and
         web i18next JSON (web keys under `web.`, placeholders %{n})
 
@@ -41,7 +47,7 @@ context: |
       clients record, upload, store locally, display, edit
     - Cloudflare (ADR-0003), one Worker from react-tanstarter (ADR-0004): TanStack Start web UI +
       Hono API at /api/v1 (the ONLY API native clients call; server functions are web-internal) +
-      Better Auth (ADR-0011) + D1 (accounts, entitlements, usage) + R2 (audio) + AI Gateway
+      Better Auth (ADR-0015) + D1 (accounts, entitlements, usage) + R2 (audio) + AI Gateway
     - Sync (ADR-0005): one Durable Object per user (SQLite) holds memos/summaries/prompts/settings;
       push/pull/ws protocol, row-level LWW on updated_at (tie-break device_id), UUIDv7 ids,
       soft delete, server-only fields (status, transcript, polished, ai_title)
@@ -52,8 +58,8 @@ context: |
 
   ## Verification commands by area
     - Apple (run xcodegen in apple/ first if project.yml or the layout changed):
-        cd apple && xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
-        cd apple && xcodebuild test  -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+        cd apple && xcodebuild build -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -skipPackagePluginValidation
+        cd apple && xcodebuild test  -project Murmurs.xcodeproj -scheme Murmurs -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -skipPackagePluginValidation
     - Web: pnpm --dir web check && pnpm --dir web test && pnpm --dir web build
     - Contract: pnpm --dir web contract:generate; contract/scripts/check-drift.sh; contract/scripts/check-breaking.sh;
         contract/scripts/check-generators.sh [swift|kotlin]

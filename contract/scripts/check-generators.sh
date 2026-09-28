@@ -2,7 +2,7 @@
 # Proves contract/openapi.json is accepted by the client generators the apps use.
 #
 #   check-generators.sh           # both
-#   check-generators.sh swift     # swift-openapi-generator via SwiftPM (needs Swift)
+#   check-generators.sh swift     # swift-openapi-generator via apple/Packages/MurmursAPI (needs Swift)
 #   check-generators.sh kotlin    # openapi-generator (Kotlin) via Docker
 set -euo pipefail
 
@@ -12,7 +12,7 @@ KOTLIN_GENERATOR_IMAGE="openapitools/openapi-generator-cli:v7.25.0"
 
 check_swift() {
   echo "== swift-openapi-generator"
-  swift build --package-path "$root/contract/consumers/swift"
+  swift build --package-path "$root/apple/Packages/MurmursAPI"
 }
 
 check_kotlin() {

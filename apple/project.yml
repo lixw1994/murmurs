@@ -16,6 +16,8 @@ packages:
     path: ./Packages/XLog
   XLang:
     path: ./Packages/XLang
+  MurmursAPI:
+    path: ./Packages/MurmursAPI
   KeychainAccess:
     url: https://github.com/kishikawakatsumi/KeychainAccess.git
     from: 4.2.0
@@ -165,6 +167,7 @@ targets:
       - package: DSWaveformImage
         product: DSWaveformImageViews
       - package: MarkdownUI
+      - package: MurmursAPI
       - target: MurmursWatch
       - target: MurmursWidget
     sources:
@@ -187,6 +190,7 @@ targets:
         NSSpeechRecognitionUsageDescription: "Access to speech recognition functionality is required."
         NSMicrophoneUsageDescription: "Murmurs requires access to your microphone so that you can record entries in your journal."
         NSSupportsLiveActivities: true
+        MurmursAPIBaseURL: $(MURMURS_API_BASE_URL)
         UIBackgroundModes: [audio]
         CFBundleURLTypes:
           - CFBundleTypeRole: Editor
@@ -199,8 +203,13 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.tangyue.murmurs
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
       configs:
+        Debug:
+          MURMURS_API_BASE_URL: https://murmurs-staging.denkit.app
         Snapshot:
           SWIFT_ACTIVE_COMPILATION_CONDITIONS: [DEBUG, SNAPSHOT]
+          MURMURS_API_BASE_URL: https://murmurs-staging.denkit.app
+        AppStore:
+          MURMURS_API_BASE_URL: https://murmurs.denkit.app
   SnapshotTests:
     type: bundle.ui-testing
     deploymentTarget: "18.0"

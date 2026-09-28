@@ -1,9 +1,11 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 
+import type { ApiEnv } from "./context";
 import { errorBody } from "./errors";
+import { registerAccounts } from "./routes/accounts";
 import { registerHealth } from "./routes/health";
 
-export type ApiEnv = { Bindings: Env };
+export type { ApiEnv };
 export type ApiApp = OpenAPIHono<ApiEnv>;
 
 export const API_BASE_PATH = "/api/v1";
@@ -46,6 +48,7 @@ export function createApiApp(extend?: (app: ApiApp) => void): ApiApp {
   });
 
   registerHealth(app);
+  registerAccounts(app);
   extend?.(app);
 
   return app;
