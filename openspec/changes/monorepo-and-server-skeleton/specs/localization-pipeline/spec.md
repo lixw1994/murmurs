@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Single localization source
-`l10n/Localizable.csv` SHALL be the only source of user-facing strings for the Apple app and the web app, with the columns `key`, `comment`, `en`, and `zh-Hans`. Generated localization files SHALL NOT be edited by hand.
+`l10n/Localizable.csv` SHALL be the only source of user-facing strings for the Apple app and the web app, with the columns `key`, `comment`, `platforms`, `en`, and `zh-Hans`. Generated localization files SHALL NOT be edited by hand.
 
 #### Scenario: Web strings come from the CSV
 - **WHEN** a developer needs a new user-facing string in the web UI
@@ -20,16 +20,20 @@ A single documented command SHALL regenerate the Apple outputs (the `LocalizedKe
 - **THEN** the second run changes no files
 
 ### Requirement: Platform-scoped keys
-A key SHALL be usable by the Apple app, the web app, or both. Each platform's generated output SHALL contain exactly the keys that apply to that platform.
+The `platforms` column SHALL declare whether a key is used by the Apple app (`apple`), the web app (`web`), or both (`apple web`). Each platform's generated output SHALL contain exactly the keys that apply to that platform. Generation SHALL fail when a key row has an empty or unknown `platforms` value.
 
 #### Scenario: Web-only key
-- **WHEN** a key is marked as web-only
+- **WHEN** a key's `platforms` value is `web`
 - **THEN** it appears in the web locale resources
 - **AND** it does not appear in `LocalizedKeys.swift` or the `.strings` files
 
 #### Scenario: Shared key
-- **WHEN** a key applies to both platforms
+- **WHEN** a key's `platforms` value is `apple web`
 - **THEN** it appears in both the Apple and the web outputs with the same translations
+
+#### Scenario: Missing platforms value
+- **WHEN** a key row has an empty `platforms` value
+- **THEN** generation fails and names the key
 
 ### Requirement: Placeholders work on each platform
 Strings with format placeholders SHALL render with their arguments substituted on each platform. Literal template text that looks like interpolation, such as `{{date}}` in prompt templates, SHALL render unchanged on the web.
