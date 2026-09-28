@@ -2,10 +2,10 @@ name: Apple
 
 on:
   pull_request:
-    paths: ["apple/**", "l10n/**", ".github/workflows/apple.yml"]
+    paths: ["apple/**", "l10n/**", "contract/openapi.json", ".github/workflows/apple.yml"]
   push:
     branches: [master, "release/*"]
-    paths: ["apple/**", "l10n/**", ".github/workflows/apple.yml"]
+    paths: ["apple/**", "l10n/**", "contract/openapi.json", ".github/workflows/apple.yml"]
 
 jobs:
   test:
@@ -15,9 +15,20 @@ jobs:
         working-directory: apple
     steps:
       - uses: actions/checkout@v4
-      - name: Build and test
+      - name: Toolchain
         run: |
-          bundle install
+          xcodebuild -version
+          xcrun simctl list devices available | grep -E "iPhone 17" || true
+      - name: Generate project
+        run: |
           brew install xcodegen
           xcodegen
-          bundle exec fastlane tests
+      # xcodebuild directly: fastlane's run_tests fails to parse `simctl runtime`
+      # output on Xcode 26.6. The Fastlane `tests` lane is kept for local use.
+      - name: Build and test
+        run: >
+          xcodebuild test
+          -project Murmurs.xcodeproj
+          -scheme Murmurs
+          -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+          -skipPackagePluginValidation
