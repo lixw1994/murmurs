@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Engineering workflow rules (OpenSpec + ADR, Tech Lead / helper roles) live in AGENTS.md and apply to every change:
+
+@AGENTS.md
+
 ## Project Overview
 
 **Murmurs** — an iOS/watchOS voice journal app. Users record audio memos, transcribe them (via Apple Speech or OpenAI Whisper), and summarize entries using OpenAI-compatible chat APIs. Includes premium IAP, CSV/Markdown/PDF export, and Apple Watch companion.

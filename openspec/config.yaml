@@ -1,4 +1,4 @@
-schema: spec-driven
+schema: spec-driven-with-adr
 
 context: |
   Project: Murmurs — iOS/watchOS voice journal app

@@ -1,0 +1,20 @@
+# paseo-agent-team install manifest (managed file, maintained by init.sh)
+template: paseo-agent-team
+source: https://github.com/lixw1994/paseo-agent-team
+version: local
+installed_at: 2026-09-28T08:32:45Z
+components:
+  - openspec
+  - adr
+  - skills
+  - hooks
+managed_paths:
+  - AGENTS.md  # marker block only
+  - openspec/schemas/
+  - adr/README.md
+  - .agents/skills/openspec-git-discipline/
+  - .agents/skills/architectural-decision-records/
+  - .agents/skills/tech-doc/
+  - .agents/skills/eli5/
+  - scripts/pre-commit.sh
+  - .git/hooks/pre-commit
