@@ -1,371 +1,265 @@
-# Murmurs 项目架构文档
+# Murmurs 架构
 
-## 项目概述
+本文档说明 Murmurs **当前代码**的结构和运行方式，供开发者和 agent 修改代码前阅读。每当结构性改动落地，都要同步更新本文档。
 
-Murmurs 是一款 AI 驱动的语音日记应用，支持 iOS 和 watchOS 平台。核心功能是通过录音创建日记条目，使用 AI 进行语音转文字和日记摘要生成。所有数据默认存储在设备本地。
+- **目标架构**（多端、Cloudflare 后端、同步）的决策记录在 [`adr/`](../adr/)（ADR-0001 至 ADR-0013）。
+- **实施顺序**见 [roadmap.md](./roadmap.md)。
+- **功能规格**见 [`openspec/specs/`](../openspec/specs/)。
 
-- **Bundle ID**: `com.tangyue.murmurs`
-- **最低部署版本**: iOS 17.0 / watchOS 10.0
-- **构建工具**: XcodeGen + SPM + Fastlane
+## 系统概览
 
-## 整体架构
+Murmurs 目前是一个**单机版** iOS 和 watchOS 语音日记应用。所有数据都存在设备本地；转写、润色、标题和总结由客户端直接调用 Apple Speech 或兼容 OpenAI 的 API 完成。
 
+| 项目 | 值 |
+|---|---|
+| Bundle ID | `com.tangyue.murmurs` |
+| 最低版本 | iOS 18.0 / watchOS 11.0（[ADR-0008](../adr/0008-minimum-ios-18-watchos-11.md)） |
+| UI | SwiftUI；文本编辑和分享面板桥接 UIKit（[ADR-0007](../adr/0007-swiftui-first-with-uikit-bridging.md)） |
+| 状态管理 | MVVM，ViewModel 是 `@Observable` 类 |
+| 本地存储 | SwiftData |
+| 构建 | XcodeGen（`project.yml`）、SPM、Fastlane |
+
+```mermaid
+flowchart TB
+  subgraph iOS["iOS App（Sources/）"]
+    App["App/<br/>入口 · AppState · Config · MainView"]
+    Modules["Modules/<br/>Timeline · Recording · Summary · Settings · Export · Premium"]
+    Services["Services/<br/>OpenAIClient · Transcription · AudioPlayer · IAPManager · Exporter · Readwise"]
+    Persistence["Persistence/<br/>SwiftData：Memo · Summary · Prompt · Usage"]
+    App --> Modules --> Services --> Persistence
+  end
+  subgraph Shared["Shared/（iOS 与 watchOS 共用）"]
+    Recorder["Recorder/ AudioRecorder"]
+    Conn["Connectivity（WatchConnectivity）"]
+    Intents["Intents/ · LiveActivity/"]
+    L10n["Localization/"]
+  end
+  Watch["Watch/<br/>录音 · 最近记录 · 播放"]
+  Widget["WatchWidget/<br/>表盘复杂功能 · Live Activity"]
+  Ext["Apple Speech<br/>兼容 OpenAI 的 API<br/>Readwise API"]
+
+  Modules --> Recorder
+  Watch --> Recorder
+  Watch -- transferFile --> Conn --> Persistence
+  Services --> Ext
+  Widget --> Intents
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                        iOS App (Sources/)                      │
-│                                                                │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │                   App/ (应用入口层)                       │  │
-│  │  App.swift · AppState · Config · MainView · Constants   │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│                              │                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │                 Modules/ (功能模块层)                     │  │
-│  │  Timeline · Recording · Summary · Settings · Premium    │  │
-│  │  Export                                                  │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│                              │                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │                 Services/ (服务层)                        │  │
-│  │  OpenAIClient · Transcription · SpeechRecognizer        │  │
-│  │  AudioPlayer · IAPManager · Exporter                    │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│                              │                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │                 Persistence/ (数据层)                      │  │
-│  │  DataContainer · MemoEntity · SummaryEntity              │  │
-│  │  PromptEntity · UsageEntity                              │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│                              │                                 │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────────┐   │
-│  │Components│ │ Styles/  │ │ Helpers/ │ │   Models/     │   │
-│  └──────────┘ └──────────┘ └──────────┘ └───────────────┘   │
-├────────────────────────────────────────────────────────────────┤
-│                    Shared/ (跨平台共享层)                       │
-│  AudioRecorder · Connectivity · Color+Theme · Localization    │
-│  FileHelper · Intents (Siri Shortcuts)                        │
-├────────────────────────────────────────────────────────────────┤
-│                    Packages/ (本地 SPM 包)                      │
-│  XLog (日志系统) · XLang (多语言管理)                           │
-├────────────────────────────────────────────────────────────────┤
-│                    Watch/ (watchOS 应用)                        │
-│  录音 · 最近记录 · 音频播放 · WatchConnectivity 同步           │
-└────────────────────────────────────────────────────────────────┘
-```
+
+## Targets
+
+| Target | 类型 | 平台 | 源码 |
+|---|---|---|---|
+| `Murmurs` | 应用 | iOS | `Sources/`、`Shared/`、`Resources/` |
+| `MurmursWidget` | 扩展 | iOS | `WatchWidget/`、`Shared/LiveActivity/`（Live Activity 和灵动岛） |
+| `MurmursWatch` | 应用 | watchOS | `Watch/`、`Shared/` |
+| `MurmursWatchWidget` | 扩展 | watchOS | `WatchWidget/`（表盘复杂功能：`accessoryCircular`、`accessoryCorner`） |
+| `MurmursTests` | 单元测试 | iOS | `Tests/`（mock 放在 `Tests/Mocks/`） |
+| `SnapshotTests` | UI 测试 | iOS | `SnapshotTests/`，使用 `Snapshot` 构建配置 |
 
 ## 目录结构
 
-```
-Murmurs/
-├── Sources/                 # iOS 主应用源码
-│   ├── App/                 # 应用入口、全局状态、配置
-│   ├── Models/              # 枚举模型（DarkMode, ServerType 等）
-│   ├── Modules/             # 功能模块（MVVM）
-│   │   ├── Timeline/        # 时间线（备忘录列表）
-│   │   ├── Recording/       # 录音界面
-│   │   ├── Summary/         # AI 摘要
-│   │   ├── Settings/        # 设置
-│   │   ├── Premium/         # 付费升级
-│   │   └── Export/          # 数据导出
-│   ├── Services/            # 业务服务
-│   │   ├── OpenAI/          # OpenAI API 客户端
-│   │   ├── Transcription/   # 转写服务
-│   │   ├── AudioPlayer/     # 音频播放
-│   │   ├── IAP/             # 内购管理
-│   │   └── Export/          # 导出器
-│   ├── Persistence/         # Core Data 模型与操作
-│   ├── Components/          # 可复用 UI 组件
-│   ├── Styles/              # 按钮样式
-│   ├── Helpers/             # 工具函数
-│   └── Extensions/          # Swift 扩展
-├── Shared/                  # iOS + watchOS 共享代码
-│   ├── Recorder/            # 录音引擎
-│   ├── Localization/        # 多语言资源
-│   ├── Intents/             # Siri Shortcuts
-│   └── Helpers/             # 文件工具
-├── Watch/                   # watchOS 应用
-│   ├── App/                 # Watch 应用入口与视图
-│   ├── Persistence/         # Watch Core Data
-│   ├── Services/            # Watch 音频播放
-│   └── Views/               # Watch 自定义视图
-├── WatchWidget/             # watchOS + iOS Widget
-├── Resources/               # 资产目录、启动屏、Info.plist
-├── Packages/                # 本地 SPM 包
-│   ├── XLog/                # 日志库
-│   └── XLang/               # 多语言库
-├── Tests/                   # 单元测试
-├── SnapshotTests/           # UI 快照测试
-├── fastlane/                # CI/CD 配置
-├── scripts/                 # 本地化脚本
-├── html/                    # 隐私政策、条款、支持页面
-└── project.yml              # XcodeGen 项目定义
+```text
+Sources/                 iOS 主应用
+├── App/                 入口、AppState、Config、Constants、MainView（Timeline 和 Summary 两个标签页）
+├── Modules/             功能模块（MVVM）
+│   ├── Timeline/        memo 列表、日历、搜索、快速笔记、编辑
+│   ├── Recording/       录音、暂停/继续、续录、录音完成页
+│   ├── Summary/         多步骤生成总结、详情、编辑
+│   ├── Settings/        服务器、prompt、Readwise、实验功能、关于
+│   ├── Export/          CSV / Markdown 导出
+│   └── Premium/         付费墙
+├── Services/            OpenAI、Transcription、AudioPlayer、IAP、Export、Readwise、Protocols
+├── Persistence/         DataContainer 与 SwiftData 实体
+├── Models/              配置用的枚举（ChatModel、TranscriptionProvider 等）
+└── Components/ Styles/ Helpers/ Extensions/
+Shared/                  iOS 与 watchOS 共用：Recorder、Localization、Intents、LiveActivity、Connectivity
+Watch/                   watchOS 应用（独立的 SwiftData 存储）
+WatchWidget/             表盘复杂功能和 Live Activity 的 UI
+Packages/                本地 SPM 包：XLog（日志）、XLang（运行时切换语言）
+Tests/  SnapshotTests/   测试
+openspec/  adr/  docs/   规格、架构决策、文档
 ```
 
-## 核心数据流
+## 核心流程
 
-### 1. 录音 → 转写
+### 录音与转写
 
-```
-用户点击录音按钮
-    │
-    ▼
-AppState.startRecording()
-    │ (检查权限、停止播放器)
-    ▼
-RecordingView (全屏)
-    │ (AudioRecorder 录制 M4A: AAC, 24kHz, 单声道)
-    ▼
-用户停止录音
-    │
-    ▼
-RecordingCompletedView
-    │ (显示转写结果、可编辑)
-    ▼
-保存: MemoEntity + 音频文件 → Documents/audio/
-    │
-    ▼ (Core Data NSManagedObjectContextDidSave 通知)
-    │
-TimelineViewModel.contextDidSave()
-    │ (检测新增 MemoEntity 是否需要转写)
-    ▼
-Transcription.shared.transcribe(memo)
-    │ (队列管理、并发控制)
-    ├── Apple Speech: SpeechRecognizer → SFSpeechRecognizer
-    └── OpenAI Whisper: OpenAIClient.transcribe() → API
-            │
-            ▼
-        更新 MemoEntity.content + MemoEntity.transcribed = true
+```mermaid
+sequenceDiagram
+  participant U as 用户
+  participant R as RecordingView / ViewModel
+  participant AR as AudioRecorder
+  participant LT as LiveTranscriber
+  participant DB as SwiftData
+  participant T as Transcription
+
+  U->>R: 开始录音（按钮、长按、Siri、Action Button、URL Scheme）
+  R->>AR: 录制 M4A（AAC，24 kHz，单声道）
+  R->>LT: 设备上实时转写（iOS 26 用 SpeechAnalyzer，更早版本用 SFSpeechRecognizer）
+  U->>R: 暂停 / 继续 / 停止
+  R->>DB: 保存 MemoEntity，音频文件存到 Documents/audio/
+  alt 已开启转写（trans_enabled）且 memo.needsTranscription
+    DB->>T: TimelineViewModel 把 memo 加入转写队列
+    T->>T: Apple Speech（并发 1）或 OpenAI（并发 4）
+    T->>DB: 写入 content，transcribed = true
+    opt 已配置服务器且 memo 还没有标题
+      T->>DB: 自动生成标题（OpenAIClient.generateTitle）
+    end
+  end
 ```
 
-### 2. AI 摘要生成
+- **续录**：可以给已有的 memo 追加一段录音；追加后会清空由原内容生成的派生字段（润色、标题），然后重新处理。
+- **幻觉过滤**：OpenAI 转写的结果如果和 `Transcription.hallucinationList` 里的某一项完全相同，就当作空结果丢弃。
+- **Live Activity**：录音期间通过 `LiveActivityManager` 在灵动岛显示状态；`TogglePauseRecordingIntent` 和 `StopRecordingIntent` 提供暂停和停止按钮。
 
-```
-用户选择"摘要"功能
-    │
-    ▼
-AddSummaryPromptView (选择提示词模板)
-    │
-    ▼
-AddSummaryMemoSelectionView (选择/排除备忘录)
-    │
-    ▼
-AddSummaryPreviewView (预览完整消息)
-    │ (提示词模板 + 日期备忘录内容，支持 {{date}} 占位符)
-    ▼
-AddSummarySummarizeView
-    │
-    ▼
-OpenAIClient.summarize() ──→ 流式 SSE 响应
-    │ (记录 charsSent 使用量)
-    ▼
-保存: SummaryEntity (标题 + 内容)
-```
+### AI 润色、标题与总结
 
-### 3. Watch → iPhone 同步
+所有 AI 调用都经过 `OpenAIClient`（`Sources/Services/OpenAI/`），直接请求用户配置的兼容 OpenAI 的服务（`Config.serverHost`，API Key 存在 Keychain）。
 
-```
-Watch 录音完成
-    │
-    ▼
-WatchViewModel.syncToIphone()
-    │
-    ▼
-Connectivity.sendFile(url, metadata)
-    │ (WCSession.transferFile, 元数据: timezone/createdAt/duration)
-    ▼
-iPhone: Connectivity (WCSessionDelegate)
-    │ (发送 .receivedFileFromWatch 通知)
-    ▼
-DataContainer.didReceiveFileFromWatch()
-    │ (移动音频文件 + 创建 MemoEntity)
-    ▼
-自动触发转写流程 (同上)
+| 功能 | 方法 | 流式返回 | 结果写入 |
+|---|---|---|---|
+| 润色 | `polish(_:model:)` | 是 | `MemoEntity.polishedContent` |
+| 标题 | `generateTitle(_:model:)` | 否 | `MemoEntity.title` |
+| 总结 | `summarize(_:model:temperature:)` | 是 | `SummaryEntity` |
+| 转写 | `transcribe(_:lang:model:)` | 否 | `MemoEntity.content` |
+
+生成总结分几步：**选择 prompt → 选择或排除 memo → 预览完整消息（支持 `{{date}}` 占位符）→ 流式生成 → 保存**。总结用 MarkdownUI 渲染，也可以导出为 PDF（TPPDF）。
+
+### Watch 同步到 iPhone
+
+```mermaid
+sequenceDiagram
+  participant W as Watch App
+  participant WDB as Watch SwiftData（RecordingEntity）
+  participant C as Connectivity（WCSession）
+  participant P as iPhone DataContainer
+
+  W->>WDB: 保存录音，isSent = false
+  W->>C: transferFile（附带 timezone、createdAt、duration）
+  C->>P: 发出 .receivedFileFromWatch 通知
+  P->>P: 移动音频文件，创建 MemoEntity（isFromWatch = true）
+  P->>P: 进入上面的转写流程
 ```
 
-## 全局状态管理
+### Readwise
 
-### AppState (Sources/App/AppState.swift)
+`TimelineViewModel` 和 `SummaryView` 调用 `Readwise` 服务（Readwise Reader API v3）保存 memo 和总结，并把返回的文档 ID 写回 `readwiseId`。开启 `readwise_auto_sync` 后，新 memo 在插入时、或转写完成后自动同步。token 存在 Keychain。
 
-应用级全局状态，通过 `@EnvironmentObject` 注入。
+## 状态与配置
 
-| 属性 | 类型 | 用途 |
-|------|------|------|
-| `language` | `Language` | 当前应用语言 |
-| `micPermission` | `AVAudioSession.RecordPermission` | 麦克风权限状态 |
-| `activeSheet` | `ActiveSheet?` | 当前活动的 Sheet |
-| `activeTab` | `Int` | 当前 Tab (0=Timeline, 1=Summary) |
-| `showRecording` | `Bool` | 是否显示录音全屏 |
-| `isPremium` | `Bool` | Premium 订阅状态（Keychain 持久化） |
+**`AppState`**（`@Observable`）：保存当前语言、麦克风权限、当前弹出的 sheet、当前标签页、`isPremium`，并处理 URL Scheme。
 
-关键方法:
-- `startRecording()`: 检查权限 → 停止播放器 → 显示录音界面
-- `startCreatingNote()`: 打开快速笔记 Sheet
-- `openURL()`: 处理 URL Scheme (`murmurs://record`, `murmurs://note`, `murmurs://summarize`)
+**`Config`**（`@AppStorage`，敏感值存在 Keychain）：
 
-### Config (Sources/App/Config.swift)
+| 分组 | 键 |
+|---|---|
+| 通用 | `day_start_time`（默认 2 点）、`dark_mode`、`auto_save`、`hold_to_record_enabled` |
+| 转写 | `trans_enabled`、`trans_provider`（`apple` / `openai`）、`trans_lang`、`trans_model` |
+| AI | `sum_enabled`、`chat_model`（预设模型或自定义模型 ID）、`server_host`，以及 Keychain 里的 API Key |
+| 实验功能 | `custom_whisper_prompt_enabled`、`custom_whisper_prompt`、`auto_start_on_startup` |
+| Readwise | `readwise_sync_enabled`、`readwise_auto_sync`，以及 Keychain 里的 token |
 
-用户配置，所有属性通过 `@AppStorage` 持久化到 UserDefaults。
+**日期分界**：memo 的 `day` 按 `dayStartTime` 计算，默认凌晨 2 点前的录音归到前一天。
 
-| 属性 | 默认值 | 用途 |
-|------|--------|------|
-| `dayStartTime` | 2 | 一天的起始时间（小时） |
-| `darkMode` | `.dark` | 深色模式 |
-| `transEnabled` | false | 是否启用转写 |
-| `transProvider` | `.apple` | 转写提供商 |
-| `transLang` | `.auto` | 转写语言 |
-| `transModel` | `.whisper_1` | Whisper 模型 |
-| `sumEnabled` | false | 是否启用摘要 |
-| `aiModel` | `.gpt_3_5` | OpenAI Chat 模型 |
-| `autoSave` | true | 自动保存 |
-| `serverHost` | "" | 自定义服务器地址 |
-| `serverAPIKey` | "" | 自定义服务器 API Key（Keychain） |
+## 数据模型（SwiftData）
 
-实验功能:
-- `customWhisperPromptEnabled` / `customWhisperPrompt`: 自定义 Whisper 提示词
-- `holdToRecordEnabled`: 长按录音
-- `autoStartOnStartup`: 启动时自动录音/创建笔记
+`DataContainer.shared` 在 `Application Support/DataModel.sqlite` 创建 `ModelContainer`；测试和预览时使用内存存储。
 
-## Core Data 模型
-
-### 实体关系
-
-```
-MemoEntity (备忘录)
-├── content: String        # 文本内容
-├── file: String?          # 音频文件名
-├── day: Int32             # 日期标识 (YYYYMMDD)
-├── createdAt: Date        # 创建时间
-├── timezone: String       # 时区
-├── duration: Double       # 音频时长
-├── transcribed: Bool      # 是否已转写
-├── isHidden: Bool         # 是否在摘要中隐藏
-└── isFromWatch: Bool      # 是否来自 Watch
-
-SummaryEntity (摘要)
-├── title: String          # 标题
-├── content: String        # 摘要内容
-└── createdAt: Date        # 创建时间
-
-PromptEntity (提示词模板)
-├── title: String          # 标题
-├── desc: String           # 描述
-├── content: String        # 模板内容 (支持 {{date}} 占位符)
-├── temperature: Double    # AI 温度参数
-└── createdAt: Date        # 创建时间
-
-UsageEntity (使用量)
-├── day: Int32             # 日期标识
-├── charsSent: Int32       # 发送字符数
-├── charsReceived: Int32   # 接收字符数
-└── whisperDuration: Int32 # Whisper 使用时长
+```mermaid
+erDiagram
+  MemoEntity {
+    String content
+    String polishedContent
+    String title
+    Date createdAt
+    String timezone
+    Int32 day
+    String file
+    Double duration
+    Bool transcribed
+    Bool isFromWatch
+    Bool isHidden
+    String readwiseId
+    Date syncedAt
+    Date updatedAt
+  }
+  SummaryEntity {
+    String title
+    String content
+    Date createdAt
+    String timezone
+    String prompt
+    Double temperature
+    String model
+    String readwiseId
+    Date syncedAt
+  }
+  PromptEntity {
+    String title
+    String content
+    String desc
+    Double temperature
+    Date createdAt
+  }
+  UsageEntity {
+    Int32 day
+    Int32 charsSent
+    Int32 charsReceived
+    Int32 whisperDuration
+    Int32 whisperCount
+  }
 ```
 
-Watch 端独立的 Core Data:
-```
-RecordingEntity (Watch 录音)
-├── createdAt: Date
-├── file: String
-├── duration: Double
-└── isSent: Bool           # 是否已同步到 iPhone
-```
+实体之间没有关系字段。Watch 端有自己的 SwiftData 存储，只有一个 `RecordingEntity`（`createdAt`、`file`、`duration`、`isSent`）。
 
-## 本地化系统
+## 付费与限额
 
-```
-Localizable.csv (源文件)
-    │
-    ▼ scripts/l10n (Ruby 脚本)
-    │
-    ├── Shared/Localization/LocalizedKeys.swift  (MyLocalizedKey 枚举, 288 个键)
-    ├── Shared/Localization/en.lproj/Localizable.strings
-    └── Shared/Localization/zh-Hans.lproj/Localizable.strings
-```
+- 通过 StoreKit 1（`SKPaymentQueue`）购买一次性商品 `com.tangyue.murmurs.premium`，购买状态存在 Keychain。
+- 限额定义在 `Constants.Limit` 中：
 
-使用方式:
-```swift
-// 简单翻译
-L(.app_name)  // → "Murmurs"
+| 限额 | 免费 | Premium |
+|---|---|---|
+| 每日 AI 字符数 | 20,000 | 100,000 |
+| 自定义 prompt 数 | 3 | 不限 |
+| 数据导出 | – | ✓ |
 
-// 带参数
-L(.sum_title_default, dateString)  // → "Summary for 2024-01-01"
-```
+## 系统集成入口
 
-语言切换通过 `XLang.shared.setLang()` 实现，支持运行时动态切换。
+| 入口 | 实现 |
+|---|---|
+| URL Scheme | `murmurs://record`、`murmurs://note`、`murmurs://note?text=…`、`murmurs://summarize`（`AppState`） |
+| Siri、快捷指令、Action Button | `StartRecordingIntent` 加 `Shortcuts`（`Shared/Intents/`） |
+| Live Activity、灵动岛 | `MurmursWidget` 扩展里的 `RecordingLiveActivity` |
+| 表盘复杂功能 | `MurmursWatchWidget` 扩展里的 `MurmursStaticWidget` |
 
-## Premium 与限制系统
+## 本地化
 
-### 购买流程
-- 使用 StoreKit 1 (`SKPaymentQueue`)
-- 产品 ID: `com.tangyue.murmurs.premium`
-- 一次性购买（非订阅）
-- Premium 状态存储在 Keychain
+`Localizable.csv`（列：key、comment、en、zh-Hans）是文案的唯一来源。运行 `rake l10n`（脚本在 `scripts/l10n`）会生成 `Shared/Localization/LocalizedKeys.swift` 和两种语言的 `.strings` 文件。代码里用 `L(.key)` 引用文案；`XLang` 支持在运行时切换语言。
 
-### 功能限制
+## 构建与 CI
 
-| 功能 | 免费 | Premium |
-|------|------|---------|
-| 每日字符限额 | 20,000 | 100,000 |
-| 自定义提示词数 | 3 | 无限 |
-| 基本功能 | ✓ | ✓ |
+| 配置 | 用途 |
+|---|---|
+| `Debug` | 开发 |
+| `Snapshot` | UI 快照测试（编译条件 `SNAPSHOT`） |
+| `AppStore` | 发布 |
 
-## 构建与 CI/CD
+- **CI**：`.github/workflows/run-unit-tests.yml`，推送到 `release/*` 分支时触发，运行 Fastlane `tests` lane。
+- **Fastlane**：`beta`（match 签名 → gym 构建 → 上传 TestFlight）；`tests`（在 iPhone 15 Pro 模拟器上运行单元测试）。
+- **SPM 依赖**：KeychainAccess、ConfettiSwiftUI、DSWaveformImage、CSV.swift、TPPDF、MarkdownUI，以及本地包 XLog、XLang。
 
-### 构建流程
+构建和验证命令见 [CLAUDE.md](../CLAUDE.md)。
 
-```
-1. bundle install           # 安装 Ruby 依赖 (Fastlane)
-2. xcodegen                 # 从 project.yml 生成 Xcode 项目
-3. Xcode Build              # 构建应用
-```
+## 演进方向
 
-### CI (GitHub Actions)
-- 触发条件: push 到 `release/*` 分支
-- 环境: macOS latest
-- 步骤: checkout → bundle install → xcodegen → fastlane tests
+当前架构会按 [roadmap.md](./roadmap.md) 逐步变为多端系统。下表列出现有模块的去向，以及依据的 ADR：
 
-### Fastlane Lanes
-- `beta`: match 签名 → 递增 build number → gym 构建 → 上传 TestFlight
-- `tests`: 在 iPhone 15 Pro 模拟器上运行单元测试
-
-### 构建配置
-| 配置 | 类型 | 说明 |
-|------|------|------|
-| Debug | debug | 开发调试 |
-| Snapshot | debug | UI 快照测试（额外编译条件 `SNAPSHOT`） |
-| AppStore | release | App Store 发布 |
-
-## 第三方依赖
-
-### 本地包
-| 包名 | 用途 |
-|------|------|
-| XLog | swift-log 封装，提供 debug/info/error 三级日志 |
-| XLang | 多语言管理，支持动态语言切换 |
-
-### 远程包
-| 包名 | 用途 |
-|------|------|
-| KeychainAccess | Keychain 访问封装 |
-| ConfettiSwiftUI | 庆祝动画效果 |
-| DSWaveformImage | 音频波形图 |
-| CSV | CSV 文件读写 |
-| TPPDF | PDF 文档生成 |
-
-## URL Scheme
-
-应用注册了 `murmurs://` URL Scheme，支持以下路由:
-
-| URL | 功能 |
-|-----|------|
-| `murmurs://record` | 启动录音 |
-| `murmurs://note` | 打开快速笔记 |
-| `murmurs://note?text=内容` | 直接保存快速笔记 |
-| `murmurs://summarize` | 启动今日摘要 |
-
-## 注意事项
-
-1. **日期分界线**: 一天的起始时间由 `Config.dayStartTime` 控制（默认凌晨 2 点），不是午夜 0 点。凌晨 2 点前的记录归属前一天。
-2. **Core Data 线程**: 所有 Core Data 操作使用主线程 `viewContext`。
-3. **转写并发**: Apple Speech 最多 1 并发，OpenAI Whisper 最多 4 并发。
-4. **Whisper 幻觉过滤**: 转写结果会与硬编码的常见幻觉文本比对，命中则返回空字符串。
-5. **敏感信息**: API Key 和 Premium 状态存储在 Keychain。
+| 现有模块 | 去向 | 依据 |
+|---|---|---|
+| `OpenAIClient`（转写、润色、标题、总结） | 由服务端流水线和 API 取代 | [ADR-0002](../adr/0002-thick-server-thin-clients.md)、[ADR-0006](../adr/0006-cloudflare-workflows-for-memo-pipeline.md) |
+| 自定义服务器、API Key 设置 | 删除 | [ADR-0002](../adr/0002-thick-server-thin-clients.md) |
+| 纯本地的 SwiftData | 保留，增加同步字段，接入 SyncEngine | [ADR-0005](../adr/0005-per-user-durable-object-with-custom-sync.md)、[ADR-0009](../adr/0009-offline-first-native-online-first-web.md) |
+| `UsageEntity`、`Constants.Limit` | 改由服务端记录用量、检查配额 | [ADR-0012](../adr/0012-subscriptions-via-revenuecat.md) |
+| StoreKit 1 `IAPManager` | 由 RevenueCat 订阅取代 | [ADR-0012](../adr/0012-subscriptions-via-revenuecat.md) |
+| 客户端 Readwise | 移到服务端 | [ADR-0002](../adr/0002-thick-server-thin-clients.md) |
+| 仓库根目录下的 Swift 工程 | 移到 `apple/` | [ADR-0013](../adr/0013-monorepo-in-existing-repository.md) |

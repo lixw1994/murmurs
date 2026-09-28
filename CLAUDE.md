@@ -8,7 +8,15 @@ Engineering workflow rules (OpenSpec + ADR, Tech Lead / helper roles) live in AG
 
 ## Project Overview
 
-**Murmurs** — an iOS/watchOS voice journal app. Users record audio memos, transcribe them (via Apple Speech or OpenAI Whisper), and summarize entries using OpenAI-compatible chat APIs. Includes premium IAP, CSV/Markdown/PDF export, and Apple Watch companion.
+**Murmurs** — an iOS/watchOS voice journal app. Users record audio memos, transcribe them (via Apple Speech or OpenAI Whisper), and summarize entries using OpenAI-compatible chat APIs. Includes premium IAP, CSV/Markdown/PDF export, Readwise sync, and Apple Watch companion.
+
+The sections below describe the **current** codebase: a standalone iOS/watchOS app with all data on device. The project is pre-launch and is being rebuilt into a multi-platform product (native Apple/Android clients, web + Electron desktop, one Cloudflare Worker backend with per-user Durable Object sync):
+
+- `adr/` — in-force architecture decisions (ADR-0001..0013); read before designing any change
+- `docs/architecture.md` — current system; `docs/roadmap.md` — phases P0–P6 toward the target
+- `openspec/config.yaml` — project context, per-area verification commands, and artifact rules for OpenSpec changes
+
+Paths and commands below stay valid until the P0 monorepo change moves the Swift project under `apple/`.
 
 ## Build & Development
 
@@ -99,10 +107,10 @@ Fastlane is configured for App Store deployment. Install with `bundle install`, 
 - **Sources/** — Main iOS app code
   - `App/` — App entry point, Config (AppStorage-based settings), AppState, MainView (TabView with Timeline + Summary)
   - `Modules/` — Feature modules: Timeline, Recording, Summary, Settings, Export, Premium
-  - `Services/` — OpenAI client (chat + whisper), audio player, transcription (Apple Speech), IAP, export
+  - `Services/` — OpenAI client (chat + whisper), audio player, transcription (Apple Speech, live SpeechAnalyzer/SFSpeechRecognizer), IAP (StoreKit 1), Readwise, export
   - `Persistence/` — SwiftData models and DataContainer (MemoEntity, SummaryEntity, PromptEntity, UsageEntity)
   - `Components/`, `Styles/`, `Extensions/`, `Helpers/`, `Models/`
-- **Shared/** — Code shared between iOS and watchOS (audio recorder, localization, theme colors, notifications, intents)
+- **Shared/** — Code shared between iOS and watchOS (audio recorder, localization, theme colors, notifications, intents, Live Activity)
 - **Watch/** — watchOS app
 - **WatchWidget/** — WidgetKit extensions (iOS + watchOS)
 - **Packages/** — Local SPM packages: `XLog` (logging), `XLang` (language/localization utilities)
@@ -124,7 +132,7 @@ Fastlane is configured for App Store deployment. Install with `bundle install`, 
 
 ### Dependencies (SPM)
 
-KeychainAccess, ConfettiSwiftUI, DSWaveformImage, CSV.swift, TPPDF — plus local packages XLog and XLang.
+KeychainAccess, ConfettiSwiftUI, DSWaveformImage, CSV.swift, TPPDF, MarkdownUI — plus local packages XLog and XLang.
 
 ### Deployment Targets
 
