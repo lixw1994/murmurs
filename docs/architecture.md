@@ -271,7 +271,7 @@ flowchart LR
 | 数据库 | D1 + Drizzle。schema 在 `src/lib/db/schema/`，迁移文件在 `drizzle/`（第一个迁移创建 Better Auth 的表），通过 `wrangler d1 migrations apply` 应用 |
 | 环境 | `wrangler.toml` 顶层是本地开发（`ENVIRONMENT=development`），`[env.staging]` 和 `[env.production]` 各有独立的 Worker 名和 D1。staging 和 production 的 D1 id 与密钥要由账号所有者创建后填入 |
 | 页面与文案 | 只有一个落地页；主题和语言切换沿用模板。文案来自 `l10n/`，语言为 `en` 和 `zh-Hans` |
-| 测试 | Vitest 4 + `@cloudflare/vitest-pool-workers`，在 Workers 运行时里测试 `test/api-worker.ts`（只挂载 Hono 应用）以及休眠状态的 Better Auth |
+| 测试 | Vitest 4 + `@cloudflare/vitest-pool-workers`，在 Workers 运行时里测试 `test/api-worker.ts`（只挂载 Hono 应用）、休眠状态的 Better Auth、契约覆盖（每个注册的路由都在契约里）和 i18n 插值 |
 
 ## API 契约（`contract/`）
 

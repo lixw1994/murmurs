@@ -5,11 +5,12 @@
 #   check-breaking.sh                          # base: $BASE_REF (default origin/master)
 #   check-breaking.sh --base A.json --revision B.json
 #
-# Uses a local `oasdiff` binary if present, otherwise the tufin/oasdiff image.
+# Uses a local `oasdiff` binary if present, otherwise the pinned tufin/oasdiff image.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 base_ref="${BASE_REF:-origin/master}"
+OASDIFF_IMAGE="tufin/oasdiff:v1.32.1"
 base=""
 revision="$root/contract/openapi.json"
 
@@ -38,7 +39,7 @@ if command -v oasdiff >/dev/null 2>&1; then
   run=(oasdiff)
   dir="$work"
 elif command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
-  run=(docker run --rm -v "$work:/specs:ro" tufin/oasdiff)
+  run=(docker run --rm -v "$work:/specs:ro" "$OASDIFF_IMAGE")
   dir="/specs"
 else
   echo "Neither oasdiff nor a running Docker daemon is available." >&2

@@ -67,7 +67,7 @@ Move the Swift project directories and the Ruby tooling (`Gemfile`, `Gemfile.loc
 
 Copy the template without `.git`, `node_modules`, `.env*`, `.wrangler`, `dist`, `.tanstack`, or its agent files. Rename it to `murmurs`. Remove the demo and account routes (`(app)/*`, `(auth)/*`, `about`), the admin user management, and the auth UI components. Keep the root shell, the theme, the i18n setup, shadcn/ui, and a public landing page that shows the Murmurs name and a short description.
 
-Keep Better Auth mounted at `/api/auth/*` with the D1 adapter and the `tanstackStartCookies` plugin, but with `emailAndPassword.enabled: false`, no social providers, and no generic OAuth. Sign-up and sign-in then fail by construction, and the follow-up auth change only adds providers. Remove the `VITE_ALLOW_*` flags and the admin email setting. Keep `BETTER_AUTH_SECRET` required.
+Keep Better Auth mounted at `/api/auth/*` with the D1 adapter and the `tanstackStartCookies` plugin, but with `emailAndPassword.enabled: false`, no social providers, and no generic OAuth. Sign-up and sign-in then fail by construction, and the follow-up auth change only adds providers. Remove the `VITE_ALLOW_*` flags and the admin email setting. `BETTER_AUTH_SECRET` stays required, but it is read when the auth instance is first created. The request context exposes a memoized `getAuth()` instead of a prebuilt instance, so `/api/v1` works without auth secrets and only `/api/auth/*` depends on them. Better Auth moves from 1.4.10 to 1.4.22, a patch release within the template's `^1.4.10` range.
 
 *Alternative:* remove Better Auth entirely until the auth change. Rejected because its tables anchor the first D1 migration, and re-adding the wiring is more work than keeping it inert.
 
@@ -96,23 +96,33 @@ D1 schema changes use `drizzle-kit generate` (output `web/drizzle/`, set as `mig
 - `GET /health` → `{ status: "ok", version, environment }`. `version` comes from `package.json` through the existing `__APP_VERSION__` define. `environment` comes from `ENVIRONMENT`.
 - `defaultHook` → 400 `{ error: { code: "invalid_request", message, details: <zod issues> } }`.
 - `notFound` → 404 `not_found`. `onError` → 500 `internal_error` with a generic message; the error is logged, never returned.
-- a shared `ErrorResponse` schema registered as a component and referenced by every route's error responses.
+- a shared `ErrorResponse` schema registered as a component and referenced by every route's error responses. In the contract, `error.code` is a `string` whose description lists the known codes, not an enum. Codes will be added within v1, and generated Swift/Kotlin enums would fail to decode unknown values (ADR-0014). The server still types codes as a closed union.
 
 `src/routes/api/v1/$.ts` forwards `GET`, `POST`, `PUT`, `PATCH`, and `DELETE` to `apiApp.fetch(request, context.env, executionCtx)`. The API module imports nothing from TanStack Start, so it can move to its own Worker later (ADR-0004).
 
 ### D6. Contract: OpenAPI 3.0.3, committed JSON, drift, breaking, and consumer checks
 
 - **Version**: emit **3.0.3** with `getOpenAPIDocument`. `swift-openapi-generator` supports 3.0 and 3.1, but the Kotlin `openapi-generator`'s 3.1 support is incomplete, so 3.0 is the common denominator.
-- **Generation**: `pnpm contract:generate` (in `web/`) runs `scripts/generate-contract.ts` with `tsx`. It imports the API app, calls `getOpenAPIDocument`, and writes `contract/openapi.json` as 2-space JSON with a trailing newline. Output order follows route registration, so it is deterministic.
+- **Generation**: `pnpm contract:generate` (in `web/`) runs `scripts/generate-contract.ts` with `tsx`. `info.version` is the fixed string `v1`, not the package version, so releases do not churn the contract. It imports the API app, calls `getOpenAPIDocument`, and writes `contract/openapi.json` as 2-space JSON with a trailing newline. Output order follows route registration, so it is deterministic.
 - **Drift**: `contract/scripts/check-drift.sh` regenerates the contract into a temporary file and diffs it against the committed one. On mismatch it exits non-zero and prints `pnpm --dir web contract:generate`.
-- **Breaking changes**: `contract/scripts/check-breaking.sh` runs `oasdiff breaking --fail-on ERR` between the main branch's contract (`git show origin/master:contract/openapi.json`) and the working copy. It uses a local `oasdiff` binary if present, otherwise the `tufin/oasdiff` Docker image. When the base has no contract yet (this change), it reports "no baseline" and passes. CI uses the same script.
-- **Consumers**: `contract/scripts/check-generators.sh [swift|kotlin]` (default: both) (a) builds `contract/consumers/swift`, a SwiftPM package whose target uses the `swift-openapi-generator` build plugin with `openapi.json` symlinked from the contract, and (b) runs `openapitools/openapi-generator-cli` in Docker with `-g kotlin` into a temporary directory. Both must succeed.
+- **Breaking changes**: `contract/scripts/check-breaking.sh` runs `oasdiff breaking --fail-on ERR` between the main branch's contract (`git show origin/master:contract/openapi.json`) and the working copy. It uses a local `oasdiff` binary if present, otherwise the `tufin/oasdiff:v1.32.1` Docker image. The image is pinned because `latest` reports only a commit hash. When the base has no contract yet (this change), it reports "no baseline" and passes. CI uses the same script.
+- **Consumers**: `contract/scripts/check-generators.sh [swift|kotlin]` (default: both) (a) builds `contract/consumers/swift`, a SwiftPM package whose target uses the `swift-openapi-generator` build plugin with `openapi.json` symlinked from the contract, and (b) runs `openapitools/openapi-generator-cli:v7.25.0` in Docker with `-g kotlin` into a temporary directory. The `latest` tag is a snapshot build. Both must succeed.
 
 *Alternative:* design-first (hand-written OpenAPI or TypeSpec). Rejected for this project: a single team changes server and clients in one pull request, so code-first with a committed artifact and CI checks gives the same guarantees with less ceremony.
 
 ### D7. Tests: Vitest 4 with the Workers pool
 
-Add `vitest@^4.1` and `@cloudflare/vitest-pool-workers@0.22` with a `vitest.config.ts` that uses `wrangler.toml` (development environment). The first tests call `SELF.fetch` to cover `/api/v1/health`, 404 JSON for unknown API paths, and the 500 envelope (through a test-only route that throws, registered only in the test app factory). The same pool later runs Durable Object and D1 tests. `pnpm test` runs it.
+Add `vitest@~4.1` and `@cloudflare/vitest-pool-workers@0.22` (via its `cloudflareTest` Vite plugin), with the development bindings from `wrangler.toml` and the D1 migrations applied in a setup file. `pnpm test` runs it.
+
+The real entry (`src/server-entry.ts`) depends on TanStack Start's Vite virtual modules and cannot load under Vitest. The pool therefore runs `test/api-worker.ts`, which serves only the Hono app and is called through `exports.default.fetch` (`SELF` is deprecated). Tests cover:
+- `/api/v1/health`, the 404 envelope for unknown paths, and the 400 and 500 envelopes (400 and 500 through extra routes passed to `createApiApp(extend)`)
+- the dormant Better Auth (sign-up, email sign-in, and social sign-in are rejected; no user is created)
+- contract coverage: every registered route appears in the OpenAPI document, with a negative case
+- web i18n interpolation (`%{n}` substituted; literal `{{date}}` kept)
+
+The routing glue (`/` → HTML, `/api/v1/*` → Hono, `/api/auth/*` → Better Auth) is verified against `pnpm dev` with curl as part of the final verification.
+
+Better Auth rejects 4xx requests inside `AsyncLocalStorage.run()`, and workerd reports those rejections to Vitest before the awaiting caller attaches its handler, although the handler does return the 4xx response. `vitest.config.ts` ignores only `APIError` instances with a status below 500; every other unhandled error still fails the run.
 
 ### D8. CI: one workflow per area, with path filters
 
@@ -132,6 +142,7 @@ The Fastlane `tests` lane device moves from iPhone 15 Pro to iPhone 17 Pro, matc
 - [vitest-pool-workers pins its own wrangler and Miniflare versions, which may lag the project's wrangler] → Pin `vitest@^4.1`. If the pool's runtime lacks a compatibility date that the project uses, align the date rather than the versions.
 - [Docker-dependent checks (oasdiff fallback, Kotlin generator) fail where Docker is not running] → The scripts check Docker availability and fail with a clear message. CI runners provide Docker.
 - [Placeholder `database_id` values could be committed and deployed by mistake] → They are syntactically invalid for wrangler, so deploy fails fast. The owner tasks replace them.
+- [Ignoring Better Auth's 4xx `APIError` rejections in tests could hide a real auth failure] → The filter matches only `APIError` with status < 500; tests assert the response statuses and the user count directly.
 - [Web-only strings in the CSV grow it with keys the Apple app never uses] → `platforms` filtering keeps each output exact. CSV size is not a runtime cost.
 
 ## Migration Plan
