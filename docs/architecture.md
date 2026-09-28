@@ -269,7 +269,7 @@ flowchart LR
 | 错误格式 | `{ "error": { "code", "message", "details"? } }`：未知路径 404 `not_found`，请求不符合 schema 时 400 `invalid_request`（`details.issues` 里是 zod 的校验问题），未处理异常 500 `internal_error`，不返回内部信息 |
 | 登录 | Better Auth 已挂载在 `/api/auth/*`，但没有启用任何登录方式，也关闭了邮箱密码，所以注册和登录都会被拒绝。它在第一次访问时才创建，`/api/v1` 不依赖它的密钥 |
 | 数据库 | D1 + Drizzle。schema 在 `src/lib/db/schema/`，迁移文件在 `drizzle/`（第一个迁移创建 Better Auth 的表），通过 `wrangler d1 migrations apply` 应用 |
-| 环境 | `wrangler.toml` 顶层是本地开发（`ENVIRONMENT=development`），`[env.staging]` 和 `[env.production]` 各有独立的 Worker 名和 D1。staging 和 production 的 D1 id 与密钥要由账号所有者创建后填入 |
+| 环境 | `wrangler.toml` 顶层是本地开发（`ENVIRONMENT=development`）。`[env.staging]` 部署在 https://murmurs-staging.denkit.app（Worker `murmurs-staging`，D1 `murmurs-db-staging`）；`[env.production]` 配置为 https://murmurs.denkit.app，尚未部署。两者都只通过自定义域名访问（关闭了 `workers.dev`），`BETTER_AUTH_URL` 指向各自的域名 |
 | 页面与文案 | 只有一个落地页；主题和语言切换沿用模板。文案来自 `l10n/`，语言为 `en` 和 `zh-Hans` |
 | 测试 | Vitest 4 + `@cloudflare/vitest-pool-workers`，在 Workers 运行时里测试 `test/api-worker.ts`（只挂载 Hono 应用）、休眠状态的 Better Auth、契约覆盖（每个注册的路由都在契约里）和 i18n 插值 |
 

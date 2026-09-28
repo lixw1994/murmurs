@@ -5,6 +5,7 @@ context: |
   Stage: pre-launch, no users. Target the current product model only: no backward-compatibility
   fields, legacy branches, or data migrations unless the user explicitly asks (AGENTS.md).
   Market: outside mainland China. Sign-in: Apple, Google, email OTP. Payments: RevenueCat subscriptions.
+  Domains: production https://murmurs.denkit.app (not yet deployed), staging https://murmurs-staging.denkit.app (live).
 
   Sources of truth — read before designing:
     - adr/ (in-force architecture decisions, ADR-0001..0014)

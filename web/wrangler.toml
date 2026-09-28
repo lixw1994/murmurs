@@ -25,22 +25,27 @@ migrations_dir = "drizzle"
 
 [env.staging]
 name = "murmurs-staging"
+workers_dev = false
+routes = [{ pattern = "murmurs-staging.denkit.app", custom_domain = true }]
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
+BETTER_AUTH_URL = "https://murmurs-staging.denkit.app"
 
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "murmurs-db-staging"
-# Create with `pnpm exec wrangler d1 create murmurs-db-staging` and paste the id.
-database_id = "REPLACE_WITH_STAGING_D1_ID"
+database_id = "bfbee026-7122-4c19-9af5-cb4a0e500411"
 migrations_dir = "drizzle"
 
 [env.production]
 name = "murmurs"
+workers_dev = false
+routes = [{ pattern = "murmurs.denkit.app", custom_domain = true }]
 
 [env.production.vars]
 ENVIRONMENT = "production"
+BETTER_AUTH_URL = "https://murmurs.denkit.app"
 
 [[env.production.d1_databases]]
 binding = "DB"

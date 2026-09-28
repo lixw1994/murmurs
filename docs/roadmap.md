@@ -42,7 +42,8 @@ P0 骨架 ──► P1 同步 ──► P2 流水线 ──► P3 功能对齐 �
   - [x] 数据库迁移从 `db:push` 改为 `drizzle-kit generate` 加 `wrangler d1 migrations apply`
   - [x] 新增 `routes/api/v1/$.ts`，挂载 Hono 加 zod-openapi 的骨架，提供 `GET /api/v1/health`
   - [x] 脚本导出 `contract/openapi.json`，检查它和代码是否一致、有没有破坏性变更（ADR-0014），并验证 Swift 和 Kotlin 生成器能使用它
-  - [ ] **需要账号所有者操作**：创建 staging 和 production 的 D1，填入 `web/wrangler.toml`，设置 `BETTER_AUTH_SECRET`，应用迁移并部署 staging（步骤见该变更 design.md 的 Migration Plan）
+  - [x] staging 上线：D1 `murmurs-db-staging`、迁移、`BETTER_AUTH_SECRET`，部署到 https://murmurs-staging.denkit.app
+  - [ ] production：创建 `murmurs-db-production`，填入 `web/wrangler.toml`，设置密钥，应用迁移并部署到 https://murmurs.denkit.app（登录变更完成后再做）
 - [ ] **登录**（下一个变更）
   - [ ] Better Auth：加 Apple provider、`bearer()` 插件、邮箱 OTP
   - [ ] 原生登录流程：客户端拿到 idToken，服务端换成 bearer token
@@ -175,7 +176,7 @@ P0 骨架 ──► P1 同步 ──► P2 流水线 ──► P3 功能对齐 �
 
 | 事项 | 需要在什么时候之前决定 | 说明 |
 |---|---|---|
-| 正式域名、品牌 | P0 | 影响 OAuth 回调地址、Apple Service ID |
+| ~~正式域名~~ | P0 | ✅ 已定：production `murmurs.denkit.app`，staging `murmurs-staging.denkit.app` |
 | 总结使用的默认模型 | P3 | 要在成本和质量之间取舍 |
 | 免费额度、订阅价格 | P4 | 依据 `usage_daily` 的实际数据 |
 | Android 的优先级 | P4 结束时 | 根据 iOS 上线后的用户反馈 |

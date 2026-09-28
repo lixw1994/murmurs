@@ -87,7 +87,7 @@ pnpm --dir web dev                # http://localhost:3000, API at /api/v1
 - Local secrets go in `web/.dev.vars` (copy `web/.dev.vars.example`). Only `/api/auth/*` needs `BETTER_AUTH_SECRET`.
 - D1 schema: edit `web/src/lib/db/schema/`, run `pnpm --dir web db:generate`, commit the migration in `web/drizzle/`.
 - API: add routes under `web/src/server/api/routes/` with `createRoute` schemas and the shared error responses; native clients use only `/api/v1` (ADR-0004), and `/api/v1` stays backward compatible (ADR-0014).
-- Environments: top-level `wrangler.toml` is local development; `[env.staging]` and `[env.production]` deploy with `pnpm --dir web deploy:staging` / `deploy:production` after their D1 ids and secrets are set.
+- Environments: top-level `wrangler.toml` is local development. Staging is live at https://murmurs-staging.denkit.app (`pnpm --dir web deploy:staging`). Production is configured for https://murmurs.denkit.app but not deployed yet; it needs its D1 id and `BETTER_AUTH_SECRET` first. Apply remote migrations with `db:migrate:staging` / `db:migrate:production` before deploying schema changes.
 
 ## Localization (`l10n/`)
 
