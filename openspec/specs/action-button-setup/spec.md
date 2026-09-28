@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Make the quick-recording App Shortcut discoverable and usable from Siri, the Shortcuts app, and the Action Button, with setup guidance in Settings.
+
+## Requirements
 
 ### Requirement: Intent description metadata
 The `StartRecordingIntent` SHALL have a `description` static property providing a human-readable explanation of the intent's purpose for display in Shortcuts app and Action Button configuration.

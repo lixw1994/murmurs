@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Allow users to pause and resume an in-progress recording without ending the session.
+
+## Requirements
 
 ### Requirement: Pause and resume during recording
 The system SHALL allow users to pause an active recording and resume it, producing a single continuous audio file. State changes SHALL be propagated to any active Live Activity.

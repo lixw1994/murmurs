@@ -1,3 +1,9 @@
+## Purpose
+
+Refine transcribed memo text with an AI polish pass that removes filler words and fixes phrasing, while keeping the original transcript available.
+
+## Requirements
+
 ### Requirement: AI polish for transcribed text
 The system SHALL allow users to polish memo transcription text using an OpenAI-compatible chat API, producing a cleaner version while preserving the original.
 

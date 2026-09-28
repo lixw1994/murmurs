@@ -1,3 +1,9 @@
+## Purpose
+
+Keep the Timeline scannable by collapsing long memo text, with tap to expand or collapse.
+
+## Requirements
+
 ### Requirement: Collapsible text display in timeline entries
 Timeline entries SHALL display content text in a collapsed (truncated) form by default, with the ability to expand to show full text.
 

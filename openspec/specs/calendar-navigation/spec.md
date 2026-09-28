@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Provide a month calendar in the Timeline for spotting days that have memos and jumping directly to a date.
+
+## Requirements
 
 ### Requirement: Calendar toggle visibility
 The Timeline toolbar SHALL include a calendar toggle button that shows or hides a month calendar view above the timeline list. The calendar SHALL be hidden by default.

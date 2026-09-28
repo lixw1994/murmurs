@@ -1,3 +1,9 @@
+## Purpose
+
+Let users find memos by keyword with full-text search across memo titles and content from the Timeline.
+
+## Requirements
+
 ### Requirement: Search entry point in Timeline
 The Timeline view SHALL provide a search bar that allows users to search memo content by keyword.
 

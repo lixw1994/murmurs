@@ -1,3 +1,9 @@
+## Purpose
+
+Generate concise AI titles for memos, automatically after transcription or on demand.
+
+## Requirements
+
 ### Requirement: AI title generation for memos
 The system SHALL allow generating a short title (≤15 characters) for a memo using an OpenAI-compatible chat API. The title SHALL be stored in the `title` field of MemoEntity.
 

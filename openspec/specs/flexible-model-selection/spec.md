@@ -1,8 +1,12 @@
-## ADDED Requirements
+## Purpose
+
+Let users choose the chat model from a preset list or enter a custom model ID for OpenAI-compatible providers.
+
+## Requirements
 
 ### Requirement: Preset model list
 
-The app provides a curated list of preset chat models covering current OpenAI and popular OpenAI-compatible models.
+The app SHALL provide a curated list of preset chat models covering current OpenAI and popular OpenAI-compatible models.
 
 #### Scenario: User views model picker
 - **WHEN** user opens Settings → Summarization → Model picker
@@ -11,7 +15,7 @@ The app provides a curated list of preset chat models covering current OpenAI an
 
 ### Requirement: Custom model ID input
 
-Users can enter any arbitrary model ID string to use models not in the preset list.
+Users SHALL be able to enter any arbitrary model ID string to use models not in the preset list.
 
 #### Scenario: User selects custom model
 - **WHEN** user selects "Custom" in the model picker
@@ -25,7 +29,7 @@ Users can enter any arbitrary model ID string to use models not in the preset li
 
 ### Requirement: Model ID sent to API
 
-The selected model's ID string is sent as the `model` field in chat completion requests.
+The selected model's ID string SHALL be sent as the `model` field in chat completion requests.
 
 #### Scenario: Summarize with selected model
 - **WHEN** user triggers summarization
@@ -37,7 +41,7 @@ The selected model's ID string is sent as the `model` field in chat completion r
 
 ### Requirement: Default model
 
-New installations default to `gpt-4o-mini`.
+New installations SHALL default to `gpt-4o-mini`.
 
 #### Scenario: Fresh install
 - **WHEN** user has never selected a model
@@ -45,7 +49,7 @@ New installations default to `gpt-4o-mini`.
 
 ### Requirement: Migration from legacy enum
 
-Existing users who have a model selected via the old enum-based storage must be migrated seamlessly.
+Existing users who have a model selected via the old enum-based storage MUST be migrated seamlessly.
 
 #### Scenario: Existing user upgrades
 - **WHEN** app launches with legacy `openai_model` AppStorage key

@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Allow users to record additional audio onto an existing memo and re-transcribe the combined content.
+
+## Requirements
 
 ### Requirement: Append recording to existing memo
 The system SHALL allow users to append a new voice recording to an existing memo, merging the audio and concatenating the transcribed text.

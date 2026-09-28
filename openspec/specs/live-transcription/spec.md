@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Transcribe speech on-device in real time while recording, so the transcript is ready as soon as recording stops.
+
+## Requirements
 
 ### Requirement: Live transcription during recording
 When the Apple transcription provider is selected and transcription is enabled, the system SHALL perform speech-to-text in real time during audio recording and display progressive results to the user.
