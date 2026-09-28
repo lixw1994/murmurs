@@ -51,8 +51,12 @@ Settings SHALL contain an Account section that lets the user reveal and copy the
 - **AND** memos stored on the device remain
 
 ### Requirement: API environment per build configuration
-Debug and Snapshot builds SHALL call the staging API (`https://murmurs-staging.denkit.app`), and AppStore builds SHALL call the production API (`https://murmurs.denkit.app`).
+Debug builds SHALL call the staging API (`https://murmurs-staging.denkit.app`), and AppStore builds SHALL call the production API (`https://murmurs.denkit.app`). Snapshot builds and unit-test runs SHALL NOT create or restore accounts.
 
 #### Scenario: Debug build
 - **WHEN** a Debug build creates an account
 - **THEN** the request goes to `https://murmurs-staging.denkit.app/api/v1/accounts`
+
+#### Scenario: Unit tests
+- **WHEN** the unit tests run in the app host
+- **THEN** no account request is sent
