@@ -106,3 +106,6 @@ fastlane/screenshots/**/*.html
 *.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/*
 !*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 .paseo-agent-team/
+
+# macOS
+.DS_Store
